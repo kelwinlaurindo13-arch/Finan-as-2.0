@@ -572,10 +572,25 @@ function catColor(c){
   return m[c]||'#9BA8C0';
 }
 
+function getFixas(y,m){
+  // Busca as fixas do mês atual; se vazias, herda do mês mais recente com dados
+  const md=getMD(y,m);
+  if(md.fixas.length) return md.fixas;
+  // Percorre meses anteriores até encontrar fixas cadastradas
+  for(let i=1;i<=12;i++){
+    let pm=m-i, py=y;
+    if(pm<0){pm+=12;py--;}
+    const prev=state.months[mk(py,pm)];
+    if(prev&&prev.fixas&&prev.fixas.length) return prev.fixas;
+  }
+  return [];
+}
+
 function getMonthTotals(y,m){
   const md=getMD(y,m);
+  const fixas=getFixas(y,m);
   const sal=parseFloat(state.salario)||0;
-  const totF=md.fixas.reduce((s,c)=>s+(c.valor||0),0);
+  const totF=fixas.reduce((s,c)=>s+(c.valor||0),0);
   const totV=md.variaveis.reduce((s,c)=>s+(c.valor||0),0);
   const totE=md.extras.reduce((s,c)=>s+(c.valor||0),0);
   const totA=md.aportes.reduce((s,c)=>s+(c.valor||0),0);
@@ -591,6 +606,7 @@ function render(){
   const t=getMonthTotals(curYear,curMonth);
   const md=getMD(curYear,curMonth);
   const pct=t.total>0?Math.min(100,(t.gastos/t.total)*100):0;
+  const fixasDoMes=getFixas(curYear,curMonth);
   const paidCount=md.fixas.filter(c=>c.pago).length;
 
   // Balance
@@ -651,7 +667,7 @@ function render(){
 
   // Fixas list
   const lf=document.getElementById('lista-fixas');
-  lf.innerHTML=md.fixas.length?md.fixas.map(c=>`
+  lf.innerHTML=fixasDoMes.length?fixasDoMes.map(c=>`
     <div class="item-card">
       <div class="item-check ${c.pago?'paid':''}" onclick="togglePago(${c.id})"></div>
       <div class="item-info">
@@ -661,7 +677,7 @@ function render(){
       <span class="item-amt">${fmt(c.valor)}</span>
       <button class="item-remove" onclick="removeFixa(${c.id})">×</button>
     </div>`).join(''):'<div class="empty-state"><div class="empty-icon">📌</div>Nenhuma conta fixa neste mês.<br>Toque em + para adicionar.</div>';
-  document.getElementById('total-fixas-row').style.display=md.fixas.length?'flex':'none';
+  document.getElementById('total-fixas-row').style.display=fixasDoMes.length?'flex':'none';
   document.getElementById('total-fixas-val').textContent=fmt(t.totF);
 
   // Vars list
