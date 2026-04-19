@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -176,6 +177,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 </div>
 
 <!-- LOGIN -->
+
 <div id="login-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--bg)">
   <div style="width:100%;max-width:340px">
     <div style="text-align:center;margin-bottom:32px">
@@ -195,6 +197,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 </div>
 
 <!-- APP -->
+
 <div id="app-screen" style="display:none">
 <div class="header">
   <div>
@@ -232,36 +235,40 @@ button,input,select{font-family:inherit;cursor:pointer}
       <span id="diff-badge" class="diff-badge same">—</span>
     </div>
 
-    <!-- CARD ESPOSA -->
-    <div class="spouse-card" id="spouse-card" onclick="openSpouseSheet()">
-      <div class="spouse-card-header">
-        <span class="spouse-card-title">💑 Finanças da Esposa</span>
-        <span class="spouse-card-arrow">Ver detalhes ›</span>
-      </div>
-      <div id="spouse-summary">
-        <div class="spouse-loading">Carregando...</div>
-      </div>
-    </div>
+```
+<!-- CARD ESPOSA -->
+<div class="spouse-card" id="spouse-card" onclick="openSpouseSheet()">
+  <div class="spouse-card-header">
+    <span class="spouse-card-title">💑 Finanças da Esposa</span>
+    <span class="spouse-card-arrow">Ver detalhes ›</span>
+  </div>
+  <div id="spouse-summary">
+    <div class="spouse-loading">Carregando...</div>
+  </div>
+</div>
 
-    <div class="budget-wrap">
-      <div class="row-between"><span class="bud-title">ORÇAMENTO UTILIZADO</span><span class="bud-pct" id="bud-pct">0%</span></div>
-      <div class="bar-track"><div class="bar-fill" id="bud-bar" style="width:0%"></div></div>
-      <div class="row-between"><span class="bud-footer" id="bud-spent"></span><span class="bud-footer" id="bud-left"></span></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon" style="background:var(--primary-light)">📌</div><div class="stat-lbl">FIXAS</div><div class="stat-val" id="st-fixas">R$ 0,00</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--accent-light)">🛒</div><div class="stat-lbl">VARIÁVEIS</div><div class="stat-val" id="st-vars">R$ 0,00</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--gold-light)">🪙</div><div class="stat-lbl">COFRINHOS</div><div class="stat-val" id="st-cof">R$ 0,00</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--green-light)">✅</div><div class="stat-lbl">FIXAS PAGAS</div><div class="stat-val" id="st-paid">0 / 0</div></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-title">DISTRIBUIÇÃO DO MÊS</div>
-      <div class="chart-bars" id="chart-bars"></div>
-      <div class="legend" id="chart-legend"></div>
-    </div>
+<div class="budget-wrap">
+  <div class="row-between"><span class="bud-title">ORÇAMENTO UTILIZADO</span><span class="bud-pct" id="bud-pct">0%</span></div>
+  <div class="bar-track"><div class="bar-fill" id="bud-bar" style="width:0%"></div></div>
+  <div class="row-between"><span class="bud-footer" id="bud-spent"></span><span class="bud-footer" id="bud-left"></span></div>
+</div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon" style="background:var(--primary-light)">📌</div><div class="stat-lbl">FIXAS</div><div class="stat-val" id="st-fixas">R$ 0,00</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:var(--accent-light)">🛒</div><div class="stat-lbl">VARIÁVEIS</div><div class="stat-val" id="st-vars">R$ 0,00</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:var(--gold-light)">🪙</div><div class="stat-lbl">COFRINHOS</div><div class="stat-val" id="st-cof">R$ 0,00</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:var(--green-light)">✅</div><div class="stat-lbl">FIXAS PAGAS</div><div class="stat-val" id="st-paid">0 / 0</div></div>
+</div>
+<div class="chart-card">
+  <div class="chart-card-title">DISTRIBUIÇÃO DO MÊS</div>
+  <div class="chart-bars" id="chart-bars"></div>
+  <div class="legend" id="chart-legend"></div>
+</div>
+```
+
   </div>
 
   <!-- FIXAS -->
+
   <div id="tab-fixas" class="tab-content">
     <div class="sec-header"><span class="sec-title">Contas Fixas</span><button class="add-btn" onclick="openSheet('fixa')">+</button></div>
     <div id="lista-fixas"></div>
@@ -269,6 +276,7 @@ button,input,select{font-family:inherit;cursor:pointer}
   </div>
 
   <!-- VARIÁVEIS -->
+
   <div id="tab-variaveis" class="tab-content">
     <div class="sec-header"><span class="sec-title">Gastos Variáveis</span><button class="add-btn" onclick="openSheet('variavel')">+</button></div>
     <div id="lista-vars"></div>
@@ -276,6 +284,7 @@ button,input,select{font-family:inherit;cursor:pointer}
   </div>
 
   <!-- COFRINHOS -->
+
   <div id="tab-cofrinhos" class="tab-content">
     <div class="sec-header"><span class="sec-title">Cofrinhos</span><button class="add-btn" onclick="openSheet('cofrinho')">+</button></div>
     <div class="info-box">💡 Aportes nos cofrinhos saem do saldo disponível e aparecem nos gráficos do mês e do ano.</div>
@@ -283,6 +292,7 @@ button,input,select{font-family:inherit;cursor:pointer}
   </div>
 
   <!-- ANUAL -->
+
   <div id="tab-anual" class="tab-content">
     <div class="sec-header"><span class="sec-title">Visão Anual — <span id="ano-label"></span></span></div>
     <div class="chart-card">
@@ -318,6 +328,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 </nav>
 
 <!-- SHEETS -->
+
 <div class="overlay" id="ov-extra" onclick="closeSheet('extra')"></div>
 <div class="sheet" id="sh-extra">
   <div class="sheet-handle"></div>
@@ -393,9 +404,11 @@ button,input,select{font-family:inherit;cursor:pointer}
     <div><div class="cfg-lbl">Entradas mensais</div><div class="cfg-sub">Valor base mensal fixo</div></div>
     <input class="cfg-input" type="number" id="cfg-sal" placeholder="0,00" inputmode="decimal">
   </div>
-  <div class="cfg-item">
-    <div><div class="cfg-lbl">UID da esposa</div><div class="cfg-sub">Para ver as finanças dela</div></div>
-    <input class="cfg-input" type="text" id="cfg-spouse" placeholder="Cole o UID" style="width:160px;font-size:11px">
+  <div style="padding:13px 0;border-bottom:1px solid var(--border)">
+    <div class="cfg-lbl">UID da esposa</div>
+    <div class="cfg-sub" style="margin-bottom:8px">Para ver as finanças dela em tempo real</div>
+    <input type="text" id="cfg-spouse" placeholder="Cole o UID completo aqui"
+      style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:10px 12px;font-size:12px;color:var(--text);background:var(--surface2);outline:none;word-break:break-all">
   </div>
   <div style="margin-top:14px;padding:10px 12px;background:var(--primary-light);border-radius:var(--radius-xs);font-size:11px;color:var(--primary);line-height:1.6">
     💡 O UID da esposa está no Firebase → Authentication → Usuários → coluna "UID do usuário".
@@ -407,6 +420,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 </div>
 
 <!-- SPOUSE DETAIL SHEET -->
+
 <div class="overlay" id="ov-spouse" onclick="closeSheet('spouse')"></div>
 <div class="sheet" id="sh-spouse" style="max-height:85vh;overflow-y:auto">
   <div class="sheet-handle"></div>
@@ -957,5 +971,6 @@ function render(){
   renderSpouseCard();
 }
 </script>
+
 </body>
 </html>
