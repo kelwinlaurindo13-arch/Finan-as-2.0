@@ -51,7 +51,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 .wave svg{display:block;width:100%}
 
 /* CONTENT */
-.content{padding:0 16px 80px;max-width:430px;margin:0 auto}
+.content{padding:0 16px 80px;max-width:430px;margin:0 auto;overflow:hidden}
 
 /* SECTION TITLE */
 .sec-title{font-size:11px;font-weight:800;color:#888;letter-spacing:1px;text-transform:uppercase;margin:16px 0 8px 2px}
@@ -291,7 +291,7 @@ button,input,select{font-family:inherit;cursor:pointer}
 
 ```
 <!-- BUDGET -->
-<div class="wcard">
+<div class="wcard" style="margin-top:0">
   <div class="bud-row"><span class="bud-lbl">Orçamento utilizado</span><span class="bud-pct" id="bud-pct">0%</span></div>
   <div class="btrack"><div class="bfill" id="bud-bar" style="width:0%;background:#7B2FBE"></div></div>
   <div class="bfoot"><span id="bud-spent">R$ 0,00 gastos</span><span id="bud-left">R$ 0,00 restam</span></div>
@@ -350,6 +350,8 @@ button,input,select{font-family:inherit;cursor:pointer}
     </div>
     <div id="annual-list"></div>
   </div>
+
+</div><!-- fim content -->
 
 </div><!-- fim content -->
 
