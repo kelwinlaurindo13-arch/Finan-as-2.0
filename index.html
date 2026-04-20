@@ -506,18 +506,34 @@ function getSourceFixas(){
   });
   return best?best.fixas:[];
 }
+// Garante que todos os meses FUTUROS a partir de curY-curM
+// que ainda não têm fixas recebam as fixas da fonte mais recente
 function propagateFixas(){
   const src=getSourceFixas();
   if(!src.length)return;
-  // Propaga apenas de abril/2026 em diante
-  for(let y=MIN_Y;y<=MIN_Y+2;y++){
-    for(let m=1;m<=12;m++){
-      if(y===MIN_Y&&m<MIN_M)continue;
-      const k=`${y}-${m}`;
-      if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{},pagosVar:{}};
-      if((userData.months[k].fixas||[]).length===0)
-        userData.months[k].fixas=src.map(f=>({...f,id:uid8()}));
-    }
+  const curTs=curY*100+curM;
+  // Propaga para os próximos 24 meses a partir do mês atual
+  for(let i=0;i<24;i++){
+    let y=curY,m=curM+i;
+    while(m>12){m-=12;y++;}
+    if(y<MIN_Y||(y===MIN_Y&&m<MIN_M))continue;
+    const k=`${y}-${m}`;
+    if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{},pagosVar:{}};
+    if((userData.months[k].fixas||[]).length===0)
+      userData.months[k].fixas=src.map(f=>({...f,id:uid8()}));
+  }
+}
+
+// Ao adicionar fixa: insere no mês atual e replica para todos os meses futuros (sem fixas ou adicionando a conta nova)
+function propagateNovaFixa(fixa){
+  for(let i=0;i<24;i++){
+    let y=curY,m=curM+i;
+    while(m>12){m-=12;y++;}
+    const k=`${y}-${m}`;
+    if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{},pagosVar:{}};
+    // Só adiciona se ainda não existe uma com mesmo nome neste mês
+    const jaExiste=(userData.months[k].fixas||[]).some(f=>f.nome===fixa.nome);
+    if(!jaExiste) userData.months[k].fixas.push({...fixa,id:uid8()});
   }
 }
 function schedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveData,700);}
@@ -718,14 +734,28 @@ function renderDonutAnal(cats){
 
 function renderAnalitico(){
   const isAnual=filtMode==='ano';
-  const titles={mes:`Distribuição — ${MN[curM-1]} ${curY}`,ano:`Distribuição — Anual ${curY}`,cat:`Por categoria — ${MN[curM-1]} ${curY}`};
+  const titles={
+    mes:`Distribuição — ${MN[curM-1]} ${curY}`,
+    ano:`Distribuição — Anual ${curY}`,
+    cat:`Por categoria — ${MN[curM-1]} ${curY}`
+  };
   document.getElementById('chart-title').textContent=titles[filtMode];
 
   // Rosca: "ano" usa acumulado, "mes" e "cat" usam mês atual
   const cats=buildCatData(isAnual);
   renderDonutAnal(cats);
 
-  // Barras anuais — sempre mostra o ano inteiro
+  // Barras e resumo: só aparecem no filtro "Anual"
+  const barCard=document.getElementById('anal-bar-card');
+  const sumCard=document.getElementById('anual-sum');
+  if(!isAnual){
+    barCard.style.display='none';
+    sumCard.style.display='none';
+    return;
+  }
+  barCard.style.display='block';
+  sumCard.style.display='block';
+
   const maxV=Math.max(1,...Array.from({length:12},(_,i)=>calcMonth(userData.months[`${curY}-${i+1}`]||{},userData.salario).total));
   const H=130;let bHtml='';let tF=0,tV=0,tA=0,tS=0;
   for(let m=1;m<=12;m++){
@@ -744,7 +774,7 @@ function renderAnalitico(){
     </div>`;
   }
   document.getElementById('bars').innerHTML=bHtml;
-  document.getElementById('anual-sum').innerHTML=`
+  sumCard.innerHTML=`
     <div class="section-title">Resumo ${curY}</div>
     <div class="list-item"><div class="item-info"><div class="item-name">Fixas</div></div><div class="item-value">${fmt(tF)}</div></div>
     <div class="list-item"><div class="item-info"><div class="item-name">Variáveis</div></div><div class="item-value">${fmt(tV)}</div></div>
@@ -837,9 +867,13 @@ function doLogout(){auth.signOut();}
 function addFixa(){
   const n=document.getElementById('fn').value.trim(),v=parseFloat(document.getElementById('fv').value);
   if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}
-  getMD().fixas.push({id:uid8(),nome:n,valor:v});
+  const novaFixa={id:uid8(),nome:n,valor:v};
+  // Garante que o mês atual existe
+  getMD();
+  // Propaga a nova fixa para este mês e todos os futuros
+  propagateNovaFixa(novaFixa);
   document.getElementById('fn').value='';document.getElementById('fv').value='';
-  closeSheets();propagateFixas();schedSave();render();showToast('Conta adicionada!');
+  closeSheets();schedSave();render();showToast('Conta adicionada!');
 }
 function addVar(){
   const n=document.getElementById('vn').value.trim(),v=parseFloat(document.getElementById('vv').value),c=document.getElementById('vc').value;
