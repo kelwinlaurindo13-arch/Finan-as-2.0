@@ -223,8 +223,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <!-- WIFE -->
       <div id="wife-section" style="display:none">
         <div class="wife-card" onclick="openWifeSheet()">
-          <div class="wife-badge-top">Finanças da esposa</div>
-          <div class="wife-title" id="wife-title">Esposa</div>
+          <div class="wife-badge-top">Finanças do(a) <span id="spouse-label">Parceiro(a)</span></div>
+          <div class="wife-title" id="wife-title"></div>
           <div class="wife-stats">
             <div class="wife-stat">
               <div class="wife-stat-label">Saldo</div>
@@ -384,7 +384,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="sheet" id="sh-cfg">
   <div class="sheet-handle"></div><div class="sheet-title">Configurações</div>
   <div class="sf"><label>Valor mensal recebido R$</label><input type="number" id="cfg-sal" inputmode="decimal" placeholder="0,00"></div>
-  <div class="sf"><label>UID da esposa</label><input type="text" id="cfg-sp" placeholder="Cole o UID aqui" style="font-size:13px"></div>
+  <div class="sf"><label>UID do parceiro(a)</label><input type="text" id="cfg-sp" placeholder="Cole o UID aqui" style="font-size:13px"></div>
+  <div class="sf"><label>Como chamar seu parceiro(a)</label><input type="text" id="cfg-spname" placeholder="Ex: Esposa, Marido, João..."></div>
   <div class="uid-box">Seu UID: <b id="my-uid" style="font-size:11px"></b></div>
   <button class="sheet-btn" onclick="saveSettings()">Salvar</button>
   <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
@@ -407,9 +408,9 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(), db=firebase.firestore();
 
-let uid='', userData={salario:0,spouseUid:'',cofrinhos:[],months:{}};
+let uid='', userData={salario:0,spouseUid:'',spouseName:'Parceiro(a)',cofrinhos:[],months:{}};
 let curY=new Date().getFullYear(), curM=new Date().getMonth()+1;
-let saveTimer=null, wifeUnsub=null, wifeData=null, isReg=false;
+let saveTimer=null, wifeData=null, isReg=false;
 
 const MN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const CC={Alimentação:'#FF6B6B',Transporte:'#4ECDC4',Saúde:'#45B7D1',Lazer:'#96CEB4',Educação:'#FFEAA7',Vestuário:'#DDA0DD',Outros:'#98A8C5'};
@@ -464,15 +465,14 @@ auth.onAuthStateChanged(async u=>{
 // DATA
 async function loadData(){
   try{const snap=await db.collection('users').doc(uid).get();
-    if(snap.exists) userData={salario:0,spouseUid:'',cofrinhos:[],months:{},...snap.data()};
+    if(snap.exists) userData={salario:0,spouseUid:'',spouseName:'Parceiro(a)',cofrinhos:[],months:{},...snap.data()};
     propagateFixas();
   }catch(e){console.error(e);}
 }
 function getKey(){return`${curY}-${curM}`;}
 function getMD(){const k=getKey();if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};return userData.months[k];}
+
 function getSourceFixas(){
-  // Pega as fixas do mês anterior mais próximo que tenha fixas cadastradas
-  // Prioridade: qualquer mês passado com fixas, pegando o mais recente
   let best=null;
   Object.keys(userData.months).forEach(mk=>{
     const[y,m]=mk.split('-').map(Number);
@@ -483,13 +483,16 @@ function getSourceFixas(){
   return best?best.fixas:[];
 }
 
+// Propaga fixas para TODOS os meses do ano corrente que ainda não têm fixas
 function propagateFixas(){
-  const k=getKey();
-  if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};
-  if((userData.months[k].fixas||[]).length>0)return;
   const src=getSourceFixas();
-  if(src.length>0)
-    userData.months[k].fixas=src.map(f=>({...f,id:uid8()}));
+  if(!src.length)return;
+  for(let m=1;m<=12;m++){
+    const k=`${curY}-${m}`;
+    if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};
+    if((userData.months[k].fixas||[]).length===0)
+      userData.months[k].fixas=src.map(f=>({...f,id:uid8()}));
+  }
 }
 function schedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveData,700);}
 async function saveData(){try{await db.collection('users').doc(uid).set(userData);}catch(e){console.error(e);}}
@@ -611,6 +614,10 @@ function setupWife(){
   fetchWife();
 }
 function renderWifeCard(){
+  const name=userData.spouseName||'Parceiro(a)';
+  document.getElementById('spouse-label').textContent=name;
+  document.getElementById('wife-title').textContent=name;
+  document.getElementById('sh-wife').querySelector('.sheet-title').textContent='Finanças — '+name;
   const k=getKey(),md=wifeData.months&&wifeData.months[k]||{fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};
   const c=calcMonth(md,wifeData.salario||0);
   const pending=(md.fixas||[]).filter(f=>!md.pagos||!md.pagos[f.id]).length;
@@ -634,19 +641,27 @@ function chMonth(d){curM+=d;if(curM>12){curM=1;curY++;}if(curM<1){curM=12;curY--
 function navTo(tab,el){['resumo','fixas','variaveis','cofrinhos','anual'].forEach(t=>document.getElementById('v-'+t).style.display='none');document.getElementById('v-'+tab).style.display='block';document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
 function openSheet(id){document.getElementById('overlay').classList.add('open');document.getElementById(id).classList.add('open');}
 function closeSheets(){document.getElementById('overlay').classList.remove('open');document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'));}
-function openSettings(){document.getElementById('cfg-sal').value=userData.salario||'';document.getElementById('cfg-sp').value=userData.spouseUid||'';openSheet('sh-cfg');}
-function saveSettings(){userData.salario=parseFloat(document.getElementById('cfg-sal').value)||0;userData.spouseUid=document.getElementById('cfg-sp').value.trim();closeSheets();schedSave();setupWife();render();showToast('Configurações salvas!');}
+function openSettings(){document.getElementById('cfg-sal').value=userData.salario||'';document.getElementById('cfg-sp').value=userData.spouseUid||'';document.getElementById('cfg-spname').value=userData.spouseName||'';openSheet('sh-cfg');}
+function saveSettings(){userData.salario=parseFloat(document.getElementById('cfg-sal').value)||0;userData.spouseUid=document.getElementById('cfg-sp').value.trim();userData.spouseName=document.getElementById('cfg-spname').value.trim()||'Parceiro(a)';closeSheets();schedSave();setupWife();render();showToast('Configurações salvas!');}
 function doLogout(){auth.signOut();}
 
 // CRUD
-function addFixa(){const n=document.getElementById('fn').value.trim(),v=parseFloat(document.getElementById('fv').value);if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}getMD().fixas.push({id:uid8(),nome:n,valor:v});document.getElementById('fn').value='';document.getElementById('fv').value='';closeSheets();schedSave();render();showToast('Conta adicionada!');}
+function addFixa(){const n=document.getElementById('fn').value.trim(),v=parseFloat(document.getElementById('fv').value);if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}getMD().fixas.push({id:uid8(),nome:n,valor:v});document.getElementById('fn').value='';document.getElementById('fv').value='';closeSheets();propagateFixas();schedSave();render();showToast('Conta adicionada!');}
 function addVar(){const n=document.getElementById('vn').value.trim(),v=parseFloat(document.getElementById('vv').value),c=document.getElementById('vc').value;if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}getMD().variaveis.push({id:uid8(),nome:n,valor:v,categoria:c});document.getElementById('vn').value='';document.getElementById('vv').value='';closeSheets();schedSave();render();showToast('Gasto adicionado!');}
 function addCofre(){const n=document.getElementById('cn').value.trim(),m=parseFloat(document.getElementById('cm').value);if(!n||isNaN(m)||m<=0){showToast('Preencha nome e meta');return;}if(!userData.cofrinhos)userData.cofrinhos=[];userData.cofrinhos.push({id:uid8(),nome:n,meta:m,total:0});document.getElementById('cn').value='';document.getElementById('cm').value='';closeSheets();schedSave();render();showToast('Cofrinho criado!');}
 function openAporte(cid){document.getElementById('ap-cid').value=cid;openSheet('sh-aporte');}
 function addAporte(){const cid=document.getElementById('ap-cid').value,n=document.getElementById('an').value.trim(),v=parseFloat(document.getElementById('av').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().aportes.push({id:uid8(),cofId:cid,nome:n,valor:v});document.getElementById('an').value='';document.getElementById('av').value='';closeSheets();schedSave();render();showToast('Aporte realizado!');}
 function addExtra(){const n=document.getElementById('en').value.trim(),v=parseFloat(document.getElementById('ev').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().extras.push({id:uid8(),nome:n,valor:v});document.getElementById('en').value='';document.getElementById('ev').value='';closeSheets();schedSave();render();showToast('Renda extra adicionada!');}
 function togglePago(id){const md=getMD();if(!md.pagos)md.pagos={};md.pagos[id]=!md.pagos[id];schedSave();render();}
-function delFixa(id){getMD().fixas=getMD().fixas.filter(f=>f.id!==id);schedSave();render();showToast('Removido');}
+function delFixa(id){
+  // Remove do mês atual e de todos os meses que têm a mesma fixa (mesmo id base)
+  for(let m=1;m<=12;m++){
+    const k=`${curY}-${m}`;
+    if(userData.months[k])userData.months[k].fixas=(userData.months[k].fixas||[]).filter(f=>f.nome!==((getMD().fixas||[]).find(x=>x.id===id)||{}).nome);
+  }
+  getMD().fixas=getMD().fixas.filter(f=>f.id!==id);
+  schedSave();render();showToast('Removido de todos os meses');
+}
 function delVar(id){getMD().variaveis=getMD().variaveis.filter(v=>v.id!==id);schedSave();render();showToast('Removido');}
 function delCofre(id){userData.cofrinhos=(userData.cofrinhos||[]).filter(c=>c.id!==id);schedSave();render();showToast('Cofrinho excluído');}
 </script>
