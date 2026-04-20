@@ -236,6 +236,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
           <div class="wife-pending" id="w-badge"></div>
+          <button id="wife-refresh-btn" onclick="fetchWife()" style="margin-top:10px;background:rgba(255,255,255,.15);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;letter-spacing:.3px">Atualizar</button>
         </div>
       </div>
 
@@ -469,19 +470,26 @@ async function loadData(){
 }
 function getKey(){return`${curY}-${curM}`;}
 function getMD(){const k=getKey();if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};return userData.months[k];}
+function getSourceFixas(){
+  // Pega as fixas do mês anterior mais próximo que tenha fixas cadastradas
+  // Prioridade: qualquer mês passado com fixas, pegando o mais recente
+  let best=null;
+  Object.keys(userData.months).forEach(mk=>{
+    const[y,m]=mk.split('-').map(Number);
+    const ts=y*100+m;
+    if((userData.months[mk].fixas||[]).length>0)
+      if(!best||ts>best.ts)best={ts,fixas:userData.months[mk].fixas};
+  });
+  return best?best.fixas:[];
+}
+
 function propagateFixas(){
   const k=getKey();
   if(!userData.months[k])userData.months[k]={fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};
   if((userData.months[k].fixas||[]).length>0)return;
-  let best=null;
-  Object.keys(userData.months).forEach(mk=>{
-    if(mk===k)return;
-    const[y,m]=mk.split('-').map(Number);
-    const ts=y*100+m,cur=curY*100+curM;
-    if(ts<cur&&(userData.months[mk].fixas||[]).length>0)
-      if(!best||ts>best.ts)best={ts,fixas:userData.months[mk].fixas};
-  });
-  if(best)userData.months[k].fixas=best.fixas.map(f=>({...f,id:Math.random().toString(36).slice(2)}));
+  const src=getSourceFixas();
+  if(src.length>0)
+    userData.months[k].fixas=src.map(f=>({...f,id:uid8()}));
 }
 function schedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveData,700);}
 async function saveData(){try{await db.collection('users').doc(uid).set(userData);}catch(e){console.error(e);}}
@@ -584,13 +592,23 @@ function renderAnual(){
   document.getElementById('anual-sum').innerHTML=`<div class="section-title">Resumo ${curY}</div><div class="list-item"><div class="item-info"><div class="item-name">Fixas</div></div><div class="item-value">${fmt(tF)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Variáveis</div></div><div class="item-value">${fmt(tV)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Aportes</div></div><div class="item-value">${fmt(tA)}</div></div><div class="list-item" style="border:none"><div class="item-info"><div class="item-name" style="color:var(--green);font-weight:700">Saldo acumulado</div></div><div class="item-value" style="color:var(--green)">${fmt(tS)}</div></div>`;
 }
 
-// WIFE
+// WIFE — atualização manual (sem listener em tempo real)
+async function fetchWife(){
+  if(!userData.spouseUid)return;
+  const btn=document.getElementById('wife-refresh-btn');
+  if(btn){btn.textContent='...';btn.disabled=true;}
+  try{
+    const snap=await db.collection('users').doc(userData.spouseUid).get();
+    wifeData=snap.exists?snap.data():null;
+    if(wifeData)renderWifeCard();
+  }catch(e){console.error(e);}
+  if(btn){btn.textContent='Atualizar';btn.disabled=false;}
+}
 function setupWife(){
-  if(wifeUnsub){wifeUnsub();wifeUnsub=null;wifeData=null;}
   const ws=document.getElementById('wife-section');
   if(!userData.spouseUid){ws.style.display='none';return;}
   ws.style.display='block';
-  wifeUnsub=db.collection('users').doc(userData.spouseUid).onSnapshot(snap=>{wifeData=snap.exists?snap.data():null;if(wifeData)renderWifeCard();});
+  fetchWife();
 }
 function renderWifeCard(){
   const k=getKey(),md=wifeData.months&&wifeData.months[k]||{fixas:[],variaveis:[],extras:[],aportes:[],pagos:{}};
