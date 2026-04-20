@@ -25,15 +25,15 @@
   --sh:0 1px 8px rgba(0,0,0,0.07);
   --nav:58px;
   --side:20px;
+  /* light defaults */
+  --bg:#F2F4F9; --sf:#FFFFFF; --sf2:#E8EBF4; --sf3:#DDE2F0;
+  --tx:#16182B; --tx2:#4A5570; --tx3:#8F9AB8; --bd:#DDE3F0;
 }
 /* LIGHT */
-@media(prefers-color-scheme:light){
-  :root{
-    --bg:#F2F4F9; --sf:#FFFFFF; --sf2:#E8EBF4; --sf3:#DDE2F0;
-    --tx:#16182B; --tx2:#4A5570; --tx3:#8F9AB8; --bd:#DDE3F0;
-  }
+:root{
+  --bg:#F2F4F9; --sf:#FFFFFF; --sf2:#E8EBF4; --sf3:#DDE2F0;
+  --tx:#16182B; --tx2:#4A5570; --tx3:#8F9AB8; --bd:#DDE3F0;
 }
-/* DARK */
 @media(prefers-color-scheme:dark){
   :root{
     --bg:#111318; --sf:#1C1F28; --sf2:#252830; --sf3:#2E3240;
@@ -288,7 +288,7 @@ button,input,select{font-family:inherit;cursor:pointer}
     </div>
 
 ```
-<div class="sp-card" id="sp-card" onclick="openSpouseSheet()">
+<div class="sp-card" id="sp-card" onclick="openSpouseSheet()" style="cursor:pointer">
   <div class="sp-hdr"><span class="sp-title">💑 Finanças da esposa</span><span class="sp-arrow">Ver detalhes ›</span></div>
   <div id="sp-summary"><div class="sp-loading">Configure o UID em ⚙️</div></div>
 </div>
