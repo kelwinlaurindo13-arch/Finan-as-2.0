@@ -571,7 +571,18 @@ function renderVars(md){
   const el=document.getElementById('vars-list');
   const cats={};(md.variaveis||[]).forEach(v=>{if(!cats[v.categoria])cats[v.categoria]=[];cats[v.categoria].push(v);});
   if(!Object.keys(cats).length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--text2)">Sem gastos variáveis.<br>Toque em + para adicionar.</div>';return;}
-  el.innerHTML=Object.entries(cats).map(([cat,items])=>`<div class="card" style="margin-bottom:10px"><div class="section-title" style="display:flex;align-items:center;gap:6px">${cat}<span style="margin-left:auto;font-size:13px;color:var(--purple);font-weight:700">${fmt(items.reduce((s,i)=>s+Number(i.valor),0))}</span></div>${items.map(v=>`<div class="list-item"><div class="item-info"><div class="item-name">${esc(v.nome)}</div><div class="item-sub">${v.categoria}</div></div><div class="item-value">${fmt(v.valor)}</div><button onclick="delVar('${v.id}')" style="background:none;border:none;cursor:pointer;padding:4px;margin-left:8px;color:#ccc"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></div>`).join('')}</div>`).join('');
+  el.innerHTML=Object.entries(cats).map(([cat,items])=>`<div class="card" style="margin-bottom:10px">
+    <div class="section-title" style="display:flex;align-items:center;gap:6px">${cat}<span style="margin-left:auto;font-size:13px;color:var(--purple);font-weight:700">${fmt(items.reduce((s,i)=>s+Number(i.valor),0))}</span></div>
+    ${items.map(v=>{const p=md.pagosVar&&md.pagosVar[v.id];return`<div class="list-item">
+      <div class="item-icon" style="background:${p?'#e8fff6':'#fff4e8'}"><svg viewBox="0 0 24 24" stroke="${p?'#00C896':'#FF9F43'}" fill="none" stroke-width="2" width="18" height="18">${p?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg></div>
+      <div class="item-info"><div class="item-name">${esc(v.nome)}</div><div class="item-sub">${p?'Pago':'Pendente'}</div></div>
+      <div class="item-value" style="color:${p?'var(--text2)':'var(--text)'}${p?';text-decoration:line-through':''}">${fmt(v.valor)}</div>
+      <div style="display:flex;gap:6px;margin-left:8px;align-items:center">
+        <button class="toggle ${p?'on':''}" onclick="togglePagoVar('${v.id}')"></button>
+        <button onclick="delVar('${v.id}')" style="background:none;border:none;cursor:pointer;padding:4px;color:#ccc"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div>
+    </div>`}).join('')}
+  </div>`).join('');
 }
 
 function renderCofrinhos(md){
@@ -653,14 +664,19 @@ function openAporte(cid){document.getElementById('ap-cid').value=cid;openSheet('
 function addAporte(){const cid=document.getElementById('ap-cid').value,n=document.getElementById('an').value.trim(),v=parseFloat(document.getElementById('av').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().aportes.push({id:uid8(),cofId:cid,nome:n,valor:v});document.getElementById('an').value='';document.getElementById('av').value='';closeSheets();schedSave();render();showToast('Aporte realizado!');}
 function addExtra(){const n=document.getElementById('en').value.trim(),v=parseFloat(document.getElementById('ev').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().extras.push({id:uid8(),nome:n,valor:v});document.getElementById('en').value='';document.getElementById('ev').value='';closeSheets();schedSave();render();showToast('Renda extra adicionada!');}
 function togglePago(id){const md=getMD();if(!md.pagos)md.pagos={};md.pagos[id]=!md.pagos[id];schedSave();render();}
+function togglePagoVar(id){const md=getMD();if(!md.pagosVar)md.pagosVar={};md.pagosVar[id]=!md.pagosVar[id];schedSave();render();}
 function delFixa(id){
-  // Remove do mês atual e de todos os meses que têm a mesma fixa (mesmo id base)
-  for(let m=1;m<=12;m++){
-    const k=`${curY}-${m}`;
-    if(userData.months[k])userData.months[k].fixas=(userData.months[k].fixas||[]).filter(f=>f.nome!==((getMD().fixas||[]).find(x=>x.id===id)||{}).nome);
-  }
-  getMD().fixas=getMD().fixas.filter(f=>f.id!==id);
-  schedSave();render();showToast('Removido de todos os meses');
+  // Descobre o nome da fixa no mês atual
+  const nome=((getMD().fixas||[]).find(f=>f.id===id)||{}).nome;
+  if(!nome)return;
+  // Remove do mês atual e de todos os meses FUTUROS (mantém histórico dos meses anteriores)
+  const curTs=curY*100+curM;
+  Object.keys(userData.months).forEach(k=>{
+    const[y,m]=k.split('-').map(Number);
+    if(y*100+m>=curTs)
+      userData.months[k].fixas=(userData.months[k].fixas||[]).filter(f=>f.nome!==nome);
+  });
+  schedSave();render();showToast('Removido deste mês em diante');
 }
 function delVar(id){getMD().variaveis=getMD().variaveis.filter(v=>v.id!==id);schedSave();render();showToast('Removido');}
 function delCofre(id){userData.cofrinhos=(userData.cofrinhos||[]).filter(c=>c.id!==id);schedSave();render();showToast('Cofrinho excluído');}
