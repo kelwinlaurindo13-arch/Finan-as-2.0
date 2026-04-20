@@ -135,6 +135,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
 .bar-stack{display:flex;flex-direction:column-reverse;width:100%;border-radius:4px 4px 0 0;overflow:hidden;background:#f0f0f8}
 .bar-lbl{font-size:9px;color:var(--text2);font-weight:600}
+.filt-btn{padding:7px 14px;border-radius:20px;border:2px solid #e0e0ea;background:#fff;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:.2s}
+.filt-btn.active{background:var(--purple);border-color:var(--purple);color:#fff}
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)}
 .legend-dot{width:10px;height:10px;border-radius:50%}
@@ -298,11 +300,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="fab" onclick="openSheet('sh-cofre')">+</button>
   </div>
 
-  <!-- ANUAL -->
+  <!-- ANALÍTICO -->
   <div id="v-anual" style="display:none">
     <div class="content">
-      <div class="section-title" id="anual-title">Visão Anual</div>
-      <div class="card">
+
+      <!-- FILTROS -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <button id="filt-mes" class="filt-btn active" onclick="setFilt('mes')">Mês atual</button>
+        <button id="filt-ano" class="filt-btn" onclick="setFilt('ano')">Anual</button>
+        <button id="filt-cat" class="filt-btn" onclick="setFilt('cat')">Por categoria</button>
+      </div>
+
+      <!-- GRÁFICO ROSCA -->
+      <div class="card" style="padding:20px 16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <span style="font-size:15px;font-weight:700" id="chart-title">Distribuição — Mês atual</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="position:relative;flex-shrink:0">
+            <svg id="anal-donut" width="130" height="130" viewBox="0 0 130 130"></svg>
+            <div id="anal-donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+              <span style="font-size:10px;color:var(--text2);font-weight:600">TOTAL</span>
+              <span id="anal-donut-total" style="font-size:14px;font-weight:800;color:var(--text)">R$ 0</span>
+            </div>
+          </div>
+          <div id="anal-legend" style="flex:1;display:flex;flex-direction:column;gap:7px;overflow:hidden"></div>
+        </div>
+      </div>
+
+      <!-- RESUMO ANUAL -->
+      <div class="card" id="anal-bar-card">
+        <div class="section-title" id="anal-bar-title">Evolução mensal</div>
         <div class="bar-chart"><div class="bars" id="bars"></div></div>
         <div class="legend">
           <div class="legend-item"><div class="legend-dot" style="background:#6C22BD"></div>Fixas</div>
@@ -310,7 +338,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div class="legend-item"><div class="legend-dot" style="background:#00C896"></div>Cofrinhos</div>
         </div>
       </div>
+
       <div class="card" id="anual-sum"></div>
+
+      <!-- IA -->
+      <div class="card" style="background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:none;padding:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#c8b4f0" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div>
+            <div style="color:#fff;font-size:14px;font-weight:700">Análise Inteligente</div>
+            <div style="color:rgba(255,255,255,.5);font-size:11px">Comparativo mês a mês com IA</div>
+          </div>
+        </div>
+        <div id="ia-result" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.7;min-height:48px">
+          <span style="color:rgba(255,255,255,.4);font-style:italic">Toque em "Analisar" para gerar insights sobre seus gastos.</span>
+        </div>
+        <div id="ia-api-warn" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin-top:12px">
+          <div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:8px">Para ativar a IA real, insira sua API key da Anthropic:</div>
+          <input id="ia-key-input" type="password" placeholder="sk-ant-..." style="width:100%;padding:9px 12px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,.12);color:#fff;outline:none;margin-bottom:8px">
+          <button onclick="saveApiKey()" style="width:100%;padding:9px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Salvar chave</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button onclick="runAnalysis()" id="ia-btn" style="flex:1;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Analisar</button>
+          <button onclick="toggleApiWarn()" style="padding:12px 14px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer">API Key</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -329,7 +384,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <svg viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Cofrinhos
     </button>
     <button class="nav-item" data-tab="anual" onclick="navTo('anual',this)">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Anual
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12 8 8"/><circle cx="12" cy="12" r="2"/></svg>Analítico
     </button>
   </nav>
 </div>
@@ -592,7 +647,112 @@ function renderCofrinhos(md){
   el.innerHTML=userData.cofrinhos.map(c=>{const total=Number(c.total||0)+Number(mAp[c.id]||0);const pct=c.meta>0?Math.min(100,Math.round(total/c.meta*100)):0;return`<div class="cofre-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:15px;font-weight:700">${esc(c.nome)}</span><span style="font-size:13px;color:var(--purple);font-weight:700">${pct}%</span></div><div style="font-size:13px;color:var(--text2)">${fmt(total)} de ${fmt(c.meta)}</div><div class="cofre-progress"><div class="cofre-fill" style="width:${pct}%"></div></div><div class="cofre-actions"><button class="cofre-btn ap" onclick="openAporte('${c.id}')">Aportar</button><button class="cofre-btn dl" onclick="delCofre('${c.id}')">Excluir</button></div></div>`;}).join('');
 }
 
+// ── ANALÍTICO ──
+let filtMode='mes';
+let anthropicKey=localStorage.getItem('mf_apikey')||'';
+
+function setFilt(mode){
+  filtMode=mode;
+  document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('filt-'+mode).classList.add('active');
+  renderAnual();
+}
+
+function toggleApiWarn(){
+  const el=document.getElementById('ia-api-warn');
+  el.style.display=el.style.display==='none'?'block':'none';
+  if(el.style.display==='block') document.getElementById('ia-key-input').value=anthropicKey;
+}
+
+function saveApiKey(){
+  anthropicKey=document.getElementById('ia-key-input').value.trim();
+  localStorage.setItem('mf_apikey',anthropicKey);
+  document.getElementById('ia-api-warn').style.display='none';
+  showToast('API key salva!');
+}
+
+// Paleta de categorias
+const CAT_PALETTE={
+  'Alimentação':'#FF6B6B','Transporte':'#4ECDC4','Saúde':'#45B7D1',
+  'Lazer':'#96CEB4','Educação':'#FFEAA7','Vestuário':'#DDA0DD','Outros':'#98A8C5',
+  'Fixas':'#6C22BD','Cofrinhos':'#00C896'
+};
+
+function getCatColor(cat){return CAT_PALETTE[cat]||'#a0a0c0';}
+
+function buildCatData(md){
+  // Agrupa variáveis por categoria + fixas como grupo + cofrinhos
+  const cats={};
+  (md.variaveis||[]).forEach(v=>{
+    if(!cats[v.categoria])cats[v.categoria]=0;
+    cats[v.categoria]+=Number(v.valor);
+  });
+  const fixT=(md.fixas||[]).reduce((s,f)=>s+Number(f.valor),0);
+  const apT=(md.aportes||[]).reduce((s,a)=>s+Number(a.valor),0);
+  if(fixT>0)cats['Fixas']=fixT;
+  if(apT>0)cats['Cofrinhos']=apT;
+  return cats;
+}
+
+function buildCatDataAnual(){
+  const cats={};
+  for(let m=1;m<=12;m++){
+    const k=`${curY}-${m}`;
+    const md=userData.months[k]||{};
+    const mc=buildCatData(md);
+    Object.entries(mc).forEach(([c,v])=>{if(!cats[c])cats[c]=0;cats[c]+=v;});
+  }
+  return cats;
+}
+
+function renderDonutAnal(cats){
+  const entries=Object.entries(cats).filter(([,v])=>v>0);
+  const total=entries.reduce((s,[,v])=>s+v,0)||1;
+  const R=52,cx=65,cy=65,strokeW=22;
+  let h='',start=0;
+  entries.forEach(([cat,val])=>{
+    const pct=val/total,ang=pct*2*Math.PI;
+    if(pct>0.01){
+      const x1=cx+R*Math.sin(start),y1=cy-R*Math.cos(start);
+      const x2=cx+R*Math.sin(start+ang),y2=cy-R*Math.cos(start+ang);
+      h+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${pct>.5?1:0},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${getCatColor(cat)}" opacity=".92"/>`;
+    }
+    start+=ang;
+  });
+  const inner=R-strokeW;
+  document.getElementById('anal-donut').innerHTML=h+`<circle cx="${cx}" cy="${cy}" r="${inner}" fill="white"/>`;
+  document.getElementById('anal-donut-total').textContent=fmt(total===1?0:total);
+
+  // Legenda lateral
+  document.getElementById('anal-legend').innerHTML=entries
+    .sort((a,b)=>b[1]-a[1])
+    .map(([cat,val])=>{
+      const pct=Math.round(val/total*100);
+      return`<div style="display:flex;align-items:center;gap:6px;min-width:0">
+        <div style="width:10px;height:10px;border-radius:50%;background:${getCatColor(cat)};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat}</div>
+          <div style="font-size:10px;color:var(--text2)">${fmt(val)} · ${pct}%</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
 function renderAnual(){
+  const isMes=filtMode==='mes', isAno=filtMode==='ano', isCat=filtMode==='cat';
+
+  // Título do gráfico de rosca
+  const chartTitles={mes:`Distribuição — ${MN[curM-1]}`,ano:'Distribuição — Anual',cat:'Por categoria — Anual'};
+  document.getElementById('chart-title').textContent=chartTitles[filtMode];
+
+  // Dados para o donut
+  let cats={};
+  if(isMes)      cats=buildCatData(getMD());
+  else if(isAno) cats=buildCatDataAnual();
+  else           cats=buildCatDataAnual(); // cat usa mesma base, legenda é por categoria
+  renderDonutAnal(cats);
+
+  // Barra anual
   const maxV=Math.max(1,...Array.from({length:12},(_,i)=>{const k=`${curY}-${i+1}`;return calcMonth(userData.months[k]||{},userData.salario).total;}));
   const H=130;let bHtml='';let tF=0,tV=0,tA=0,tS=0;
   for(let m=1;m<=12;m++){
@@ -600,10 +760,117 @@ function renderAnual(){
     const c=calcMonth(md,userData.salario);
     const hF=Math.round((c.fT/maxV)*H),hV=Math.round((c.vT/maxV)*H),hA=Math.round((c.aT/maxV)*H);
     tF+=c.fT;tV+=c.vT;tA+=c.aT;tS+=c.saldo;
-    bHtml+=`<div class="bar-col"><div class="bar-stack" style="height:${H}px"><div style="height:${hF}px;background:#6C22BD;min-height:${hF>0?2:0}px"></div><div style="height:${hV}px;background:#FF9F43;min-height:${hV>0?2:0}px"></div><div style="height:${hA}px;background:#00C896;min-height:${hA>0?2:0}px"></div></div><div class="bar-lbl">${MN[m-1].slice(0,3)}</div></div>`;
+    const isActive=m===curM;
+    bHtml+=`<div class="bar-col">
+      <div class="bar-stack" style="height:${H}px;${isActive?'outline:2px solid var(--purple);border-radius:4px 4px 0 0':''}">
+        <div style="height:${hF}px;background:#6C22BD;min-height:${hF>0?2:0}px"></div>
+        <div style="height:${hV}px;background:#FF9F43;min-height:${hV>0?2:0}px"></div>
+        <div style="height:${hA}px;background:#00C896;min-height:${hA>0?2:0}px"></div>
+      </div>
+      <div class="bar-lbl" style="${isActive?'color:var(--purple);font-weight:800':''}">${MN[m-1].slice(0,3)}</div>
+    </div>`;
   }
   document.getElementById('bars').innerHTML=bHtml;
-  document.getElementById('anual-sum').innerHTML=`<div class="section-title">Resumo ${curY}</div><div class="list-item"><div class="item-info"><div class="item-name">Fixas</div></div><div class="item-value">${fmt(tF)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Variáveis</div></div><div class="item-value">${fmt(tV)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Aportes</div></div><div class="item-value">${fmt(tA)}</div></div><div class="list-item" style="border:none"><div class="item-info"><div class="item-name" style="color:var(--green);font-weight:700">Saldo acumulado</div></div><div class="item-value" style="color:var(--green)">${fmt(tS)}</div></div>`;
+  document.getElementById('anual-sum').innerHTML=`
+    <div class="section-title">Resumo ${curY}</div>
+    <div class="list-item"><div class="item-info"><div class="item-name">Fixas</div></div><div class="item-value">${fmt(tF)}</div></div>
+    <div class="list-item"><div class="item-info"><div class="item-name">Variáveis</div></div><div class="item-value">${fmt(tV)}</div></div>
+    <div class="list-item"><div class="item-info"><div class="item-name">Aportes</div></div><div class="item-value">${fmt(tA)}</div></div>
+    <div class="list-item" style="border:none"><div class="item-info"><div class="item-name" style="color:var(--green);font-weight:700">Saldo acumulado</div></div><div class="item-value" style="color:var(--green)">${fmt(tS)}</div></div>`;
+}
+
+async function runAnalysis(){
+  const btn=document.getElementById('ia-btn');
+  const result=document.getElementById('ia-result');
+  btn.disabled=true; btn.textContent='Analisando...';
+  result.innerHTML='<span style="color:rgba(255,255,255,.4);font-style:italic">Gerando análise...</span>';
+
+  // Monta contexto financeiro
+  const meses=[];
+  for(let m=1;m<=12;m++){
+    const k=`${curY}-${m}`;
+    const md=userData.months[k]||{};
+    const c=calcMonth(md,userData.salario);
+    if(c.total>0||c.entradas>0){
+      meses.push({mes:MN[m-1],entradas:c.entradas,fixas:c.fT,variaveis:c.vT,cofrinhos:c.aT,saldo:c.saldo,
+        cats:buildCatData(md)});
+    }
+  }
+  const curMD=getMD(),curC=calcMonth(curMD,userData.salario);
+
+  if(!anthropicKey){
+    // Análise simulada offline
+    await new Promise(r=>setTimeout(r,1200));
+    result.innerHTML=gerarAnaliseSimulada(meses,curC,curMD);
+    btn.disabled=false; btn.textContent='Analisar';
+    return;
+  }
+
+  // Análise real com API
+  try{
+    const prompt=`Você é um assistente financeiro pessoal. Analise os dados abaixo e gere um relatório comparativo mês a mês em português, focando em: variações de gastos, categorias que mais cresceram ou diminuíram, e 2-3 insights práticos. Seja direto e use números reais. Máximo 200 palavras.
+
+Salário mensal: ${fmt(userData.salario)}
+Meses com dados: ${JSON.stringify(meses,null,2)}
+Mês atual (${MN[curM-1]}): fixas=${fmt(curC.fT)}, variáveis=${fmt(curC.vT)}, saldo=${fmt(curC.saldo)}`;
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error){result.innerHTML=`<span style="color:#ff8a94">Erro: ${data.error.message}</span>`;
+    }else{
+      const txt=data.content[0].text.replace(/\n/g,'<br>');
+      result.innerHTML=`<div style="color:rgba(255,255,255,.9)">${txt}</div><div style="color:rgba(255,255,255,.35);font-size:10px;margin-top:10px">Gerado por IA · ${new Date().toLocaleDateString('pt-BR')}</div>`;
+    }
+  }catch(e){result.innerHTML=gerarAnaliseSimulada(meses,curC,curMD);}
+
+  btn.disabled=false; btn.textContent='Analisar';
+}
+
+function gerarAnaliseSimulada(meses,curC,curMD){
+  if(!meses.length) return '<span style="color:rgba(255,255,255,.5)">Sem dados suficientes para análise. Adicione gastos nos meses para gerar comparativos.</span>';
+
+  const linhas=[];
+  const mesAtual=MN[curM-1];
+
+  linhas.push(`<b style="color:#c8b4f0">📊 Relatório — ${mesAtual} ${curY}</b><br>`);
+
+  // Comparativo com mês anterior
+  const idxPrev=curM-2;
+  if(idxPrev>=0){
+    const kp=`${curY}-${curM-1}`;
+    const mp=userData.months[kp];
+    if(mp){
+      const cp=calcMonth(mp,userData.salario);
+      const diff=curC.total-cp.total;
+      const sinal=diff>=0?'▲':'▼';
+      const cor=diff>=0?'#ff8a94':'#7ee8c8';
+      linhas.push(`Gastos em ${mesAtual}: ${fmt(curC.total)} <span style="color:${cor}">${sinal} ${fmt(Math.abs(diff))} vs ${MN[curM-2]}</span><br>`);
+    }
+  }
+
+  // Maior categoria do mês
+  const cats=buildCatData(curMD);
+  const topCat=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  if(topCat) linhas.push(`Maior gasto: <b>${topCat[0]}</b> com ${fmt(topCat[1])} (${Math.round(topCat[1]/(curC.total||1)*100)}% do total)<br>`);
+
+  // Saldo
+  const corSaldo=curC.saldo>=0?'#7ee8c8':'#ff8a94';
+  linhas.push(`Saldo disponível: <span style="color:${corSaldo};font-weight:700">${fmt(curC.saldo)}</span><br>`);
+
+  // Evolução anual simples
+  if(meses.length>=2){
+    const media=meses.reduce((s,m)=>s+m.total,0)/meses.length;
+    linhas.push(`<br><b style="color:#c8b4f0">📈 Média mensal de gastos (${curY}):</b> ${fmt(media)}`);
+    if(curC.total>media*1.1) linhas.push(`<br><span style="color:#ff8a94">⚠ Este mês está ${Math.round((curC.total/media-1)*100)}% acima da sua média.</span>`);
+    else if(curC.total<media*0.9&&curC.total>0) linhas.push(`<br><span style="color:#7ee8c8">✓ Ótimo! Este mês está abaixo da sua média histórica.</span>`);
+  }
+
+  linhas.push(`<br><br><span style="color:rgba(255,255,255,.3);font-size:10px">Análise local · Ative a API key para análises com IA</span>`);
+  return linhas.join('');
 }
 
 // WIFE — atualização manual (sem listener em tempo real)
