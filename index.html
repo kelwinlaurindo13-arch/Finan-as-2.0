@@ -153,13 +153,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   /* ── MAIN ── */
   #dt-main{
-    margin-left:220px;margin-right:300px;
+    margin-left:220px;margin-right:280px;
     min-height:100vh;overflow-y:auto;
     background:var(--bg)
   }
 
   /* Hero desktop */
-  .dt-hero{background:linear-gradient(135deg,var(--purple) 0%,var(--purple-light) 100%);padding:28px 32px 0}
+  .dt-hero{background:linear-gradient(135deg,var(--purple) 0%,var(--purple-light) 100%);padding:28px 32px 0;position:relative}
   .dt-hero .balance-label{color:rgba(255,255,255,.75);font-size:13px;margin-bottom:4px}
   .dt-hero .balance-value{font-size:42px;font-weight:800;letter-spacing:-1.5px;color:#fff;margin-bottom:4px}
   .dt-hero .balance-compare{display:inline-flex;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;margin-bottom:16px}
@@ -167,8 +167,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .dt-hero .pill{background:rgba(255,255,255,.18);border-radius:20px;padding:8px 16px;cursor:pointer}
   .dt-hero .pill-label{color:rgba(255,255,255,.75);font-size:11px}
   .dt-hero .pill-value{color:#fff;font-size:15px;font-weight:700}
-  .dt-hero .hero-wave svg{display:block;width:100%}
-  .dt-hero .hero-wave{background:linear-gradient(135deg,var(--purple) 0%,var(--purple-light) 100%);line-height:0}
+  .dt-wave{line-height:0;background:linear-gradient(135deg,var(--purple) 0%,var(--purple-light) 100%)}
+  .dt-wave svg{display:block;width:100%;height:28px}
 
   /* Content desktop */
   .dt-content{padding:24px 32px}
@@ -180,27 +180,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   /* ── PAINEL DIREITO ── */
   #dt-panel{
-    position:fixed;top:0;right:0;width:300px;height:100vh;
+    position:fixed;top:0;right:0;width:280px;height:100vh;
     background:#fff;border-left:1px solid #e8e8f0;
-    padding:24px 20px;overflow-y:auto;z-index:50
+    padding:24px 18px;overflow-y:auto;z-index:50
   }
-  .dp-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:16px;letter-spacing:-.3px}
-  .dp-saldo-card{background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:14px;padding:16px;margin-bottom:14px}
-  .dp-saldo-label{color:rgba(255,255,255,.7);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-  .dp-saldo-value{color:#fff;font-size:26px;font-weight:800;letter-spacing:-1px}
-  .dp-saldo-compare{color:rgba(255,255,255,.6);font-size:11px;margin-top:4px}
-  .dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .dp-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:14px;letter-spacing:-.3px}
+  .dp-saldo-card{background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:14px;padding:14px;margin-bottom:12px}
+  .dp-saldo-label{color:rgba(255,255,255,.7);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+  .dp-saldo-value{color:#fff;font-size:24px;font-weight:800;letter-spacing:-1px}
+  .dp-saldo-compare{color:rgba(255,255,255,.6);font-size:11px;margin-top:3px}
+  .dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
   .dp-mini{background:var(--bg);border-radius:10px;padding:10px 12px}
   .dp-mini-label{font-size:10px;color:var(--text2);margin-bottom:3px}
-  .dp-mini-value{font-size:14px;font-weight:800;color:var(--text)}
-  .dp-bud{background:var(--bg);border-radius:10px;padding:12px;margin-bottom:14px}
+  .dp-mini-value{font-size:13px;font-weight:800;color:var(--text)}
+  .dp-bud{background:var(--bg);border-radius:10px;padding:12px;margin-bottom:12px}
   .dp-bud-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;font-weight:600}
   .dp-bud-bar{background:#e0e0ea;border-radius:6px;height:7px;overflow:hidden}
   .dp-bud-fill{height:100%;border-radius:6px;transition:width .5s}
-  .dp-pending-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px}
-  .dp-pending-item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px}
-  .dp-pending-name{font-size:12px;font-weight:600;color:var(--text)}
-  .dp-pending-val{font-size:12px;font-weight:700;color:var(--red)}
+  /* Botões de atalho no painel */
+  .dp-shortcuts{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .dp-shortcut{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg);border-radius:12px;cursor:pointer;border:none;width:100%;transition:.15s}
+  .dp-shortcut:hover{background:#ede8f8}
+  .dp-shortcut-left{display:flex;align-items:center;gap:10px}
+  .dp-shortcut-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .dp-shortcut-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+  .dp-shortcut-label{font-size:12px;font-weight:600;color:var(--text)}
+  .dp-shortcut-count{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+  /* Sheet de pendências */
+  .pend-sheet-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+  .pend-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px}
+  .pend-item-name{font-size:13px;font-weight:600;color:var(--text)}
+  .pend-item-val{font-size:13px;font-weight:700;color:var(--red)}
 
   /* Seções desktop */
   .dt-section{padding:24px 32px}
@@ -396,11 +406,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="dp-mini"><div class="dp-mini-label">Variáveis</div><div class="dp-mini-value" id="dp-vars">R$ 0</div></div>
   </div>
   <div class="dp-bud">
-    <div class="dp-bud-row"><span>Orçamento</span><span id="dp-pct" style="color:var(--purple)">0%</span></div>
-    <div class="dp-bud-bar"><div class="dp-bud-fill" id="dp-bar" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--purple-light))"></div></div>
+    <div class="dp-bud-row"><span>Orçamento do mês</span><span id="dp-pct" style="color:var(--purple)">0%</span></div>
+    <div class="dp-bud-bar"><div class="dp-bud-fill" id="dp-bar" style="width:0%"></div></div>
   </div>
-  <div class="dp-pending-title">Contas fixas pendentes</div>
-  <div id="dp-pending"></div>
+  <div class="dp-shortcuts">
+    <button class="dp-shortcut" onclick="dtNavTo('fixas',document.querySelector('[data-tab=fixas].dt-nav-item'))">
+      <div class="dp-shortcut-left">
+        <div class="dp-shortcut-icon" style="background:#f0e8ff;color:var(--purple)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <span class="dp-shortcut-label">Fixas pendentes</span>
+      </div>
+      <span class="dp-shortcut-count" id="dp-pend-fixas" style="background:#fff0f0;color:var(--red)">0</span>
+    </button>
+    <button class="dp-shortcut" onclick="dtNavTo('variaveis',document.querySelector('[data-tab=variaveis].dt-nav-item'))">
+      <div class="dp-shortcut-left">
+        <div class="dp-shortcut-icon" style="background:#fff4e8;color:var(--orange)"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+        <span class="dp-shortcut-label">Variáveis pendentes</span>
+      </div>
+      <span class="dp-shortcut-count" id="dp-pend-vars" style="background:#fff4e8;color:var(--orange)">0</span>
+    </button>
+    <button class="dp-shortcut" onclick="dtNavTo('cofrinhos',document.querySelector('[data-tab=cofrinhos].dt-nav-item'))">
+      <div class="dp-shortcut-left">
+        <div class="dp-shortcut-icon" style="background:#e8fff6;color:var(--green)"><svg viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div>
+        <span class="dp-shortcut-label">Cofrinhos</span>
+      </div>
+      <span class="dp-shortcut-count" id="dp-cofre-count" style="background:#e8fff6;color:var(--green)">0</span>
+    </button>
+    <button class="dp-shortcut" onclick="dtNavTo('anual',document.querySelector('[data-tab=anual].dt-nav-item'))">
+      <div class="dp-shortcut-left">
+        <div class="dp-shortcut-icon" style="background:#f0e8ff;color:var(--purple)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <span class="dp-shortcut-label">Analítico</span>
+      </div>
+      <span class="dp-shortcut-count" style="background:#f0e8ff;color:var(--purple)">→</span>
+    </button>
+  </div>
 </div>
 
 <!-- SHEETS (compartilhados mobile+desktop) -->
@@ -527,7 +565,6 @@ function renderMobile(md,c){
 }
 
 function renderDesktop(md,c){
-  // Painel direito
   document.getElementById('dp-saldo').textContent=fmt(c.saldo);
   document.getElementById('dp-rec').textContent=fmt(userData.salario);
   document.getElementById('dp-gastos').textContent=fmt(c.total);
@@ -535,20 +572,24 @@ function renderDesktop(md,c){
   document.getElementById('dp-vars').textContent=fmt(c.vT);
   const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
   document.getElementById('dp-pct').textContent=pct+'%';
-  const fill=document.getElementById('dp-bar');fill.style.width=pct+'%';
+  const fill=document.getElementById('dp-bar');
+  fill.style.width=pct+'%';
   fill.style.background=pct>=90?'linear-gradient(90deg,var(--red),#ff6b7a)':pct>=70?'linear-gradient(90deg,var(--orange),#ffd89b)':'linear-gradient(90deg,var(--purple),var(--purple-light))';
   const pk=`${curM===1?curY-1:curY}-${curM===1?12:curM-1}`,prev=userData.months[pk];
   if(prev){const pc=calcMonth(prev,userData.salario),d=c.saldo-pc.saldo;document.getElementById('dp-compare').textContent=(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';}
   else document.getElementById('dp-compare').textContent='Primeiro mês';
-  const pend=(md.fixas||[]).filter(f=>!md.pagos||!md.pagos[f.id]);
-  document.getElementById('dp-pending').innerHTML=pend.length?pend.map(f=>`<div class="dp-pending-item"><span class="dp-pending-name">${esc(f.nome)}</span><span class="dp-pending-val">${fmt(f.valor)}</span></div>`).join(''):'<div style="font-size:12px;color:var(--text2);padding:4px">Todas as contas pagas!</div>';
-
+  // Contadores de pendentes
+  const pendFixas=(md.fixas||[]).filter(f=>!md.pagos||!md.pagos[f.id]).length;
+  const pendVars=(md.variaveis||[]).filter(v=>!md.pagosVar||!md.pagosVar[v.id]).length;
+  const nCofres=(userData.cofrinhos||[]).length;
+  document.getElementById('dp-pend-fixas').textContent=pendFixas;
+  document.getElementById('dp-pend-vars').textContent=pendVars;
+  document.getElementById('dp-cofre-count').textContent=nCofres;
   // Conteúdo principal
-  const main=document.getElementById('dt-main');
-  if(dtTab==='resumo')    main.innerHTML=buildDtResumo(md,c);
-  if(dtTab==='fixas')     main.innerHTML=buildDtFixas(md);
-  if(dtTab==='variaveis') main.innerHTML=buildDtVars(md);
-  if(dtTab==='cofrinhos') main.innerHTML=buildDtCofrinhos(md);
+  if(dtTab==='resumo')    document.getElementById('dt-main').innerHTML=buildDtResumo(md,c);
+  if(dtTab==='fixas')     document.getElementById('dt-main').innerHTML=buildDtFixas(md);
+  if(dtTab==='variaveis') document.getElementById('dt-main').innerHTML=buildDtVars(md);
+  if(dtTab==='cofrinhos') document.getElementById('dt-main').innerHTML=buildDtCofrinhos(md);
   if(dtTab==='anual')     renderDtAnalitico(md,c);
 }
 
@@ -556,13 +597,15 @@ function buildDtResumo(md,c){
   const pagas=(md.fixas||[]).filter(f=>md.pagos&&md.pagos[f.id]).length;
   const pgVar=(md.variaveis||[]).filter(v=>md.pagosVar&&md.pagosVar[v.id]).length;
   const totalPag=(md.fixas||[]).length+(md.variaveis||[]).length;
+  const pk=`${curM===1?curY-1:curY}-${curM===1?12:curM-1}`,prev=userData.months[pk];
+  const prevCmp=prev?(()=>{const pc=calcMonth(prev,userData.salario),d=c.saldo-pc.saldo;return(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';})():'Primeiro mês';
   let wifeHtml='';
   if(userData.spouseUid&&wifeData){
     const wmd=wifeData.months&&wifeData.months[getKey()]||{};
     const wc=calcMonth(wmd,wifeData.salario||0);
     const wpend=(wmd.fixas||[]).filter(f=>!wmd.pagos||!wmd.pagos[f.id]).length;
     const name=userData.spouseName||'Parceiro(a)';
-    wifeHtml=`<div class="wife-card dt-wife" onclick="openWifeSheet()" style="cursor:pointer">
+    wifeHtml=`<div class="wife-card dt-wife" onclick="openWifeSheet()" style="cursor:pointer;margin-bottom:16px">
       <div class="wife-badge-top">Finanças do(a) ${esc(name)}</div>
       <div class="wife-title">${esc(name)}</div>
       <div class="wife-stats">
@@ -576,14 +619,14 @@ function buildDtResumo(md,c){
   return`<div class="dt-hero">
     <div class="balance-label">Saldo disponível</div>
     <div class="balance-value">${fmt(c.saldo)}</div>
-    <div class="balance-compare">${document.getElementById('h-compare').textContent}</div>
+    <div class="balance-compare" id="h-compare">${prevCmp}</div>
     <div class="hero-pills">
       <div class="pill"><div class="pill-label">Recebido</div><div class="pill-value">${fmt(userData.salario)}</div></div>
       <div class="pill" onclick="openSheet('sh-extra')" style="cursor:pointer"><div class="pill-label">+ Renda Extra</div><div class="pill-value">${fmt(c.eT)}</div></div>
       <div class="pill"><div class="pill-label">Gastos</div><div class="pill-value">${fmt(c.total)}</div></div>
     </div>
-    <div class="hero-wave"><svg viewBox="0 0 1200 32" preserveAspectRatio="none" height="32"><path d="M0,32 L0,16 Q300,0 600,16 Q900,32 1200,16 L1200,32 Z" fill="#F4F4F8"/></svg></div>
   </div>
+  <div class="dt-wave"><svg viewBox="0 0 1200 28" preserveAspectRatio="none"><path d="M0,28 L0,14 Q300,0 600,14 Q900,28 1200,14 L1200,28 Z" fill="#F4F4F8"/></svg></div>
   <div class="dt-content">
     ${wifeHtml}
     <div class="card">
