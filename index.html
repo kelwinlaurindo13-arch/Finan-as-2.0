@@ -148,8 +148,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .dt-nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
   .dt-nav-item.active{background:rgba(255,255,255,.15);color:#fff;font-weight:700}
   .dt-nav-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-  .dt-cfg-btn{margin:0 12px;padding:10px 12px;background:rgba(255,255,255,.08);border:none;border-radius:10px;color:rgba(255,255,255,.6);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;width:calc(100% - 24px)}
+  .dt-cfg-btn{margin:0 12px 6px;padding:10px 12px;background:rgba(255,255,255,.08);border:none;border-radius:10px;color:rgba(255,255,255,.6);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;width:calc(100% - 24px)}
   .dt-cfg-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+  /* Valor oculto */
+  .hidden-val{filter:blur(6px);user-select:none;pointer-events:none;transition:filter .2s}
 
   /* ── MAIN ── */
   #dt-main{
@@ -248,9 +250,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="header">
     <div class="header-top">
       <div><div class="header-title">Minhas Finanças</div><div class="header-email" id="hdr-email"></div></div>
-      <button class="icon-btn" onclick="openSettings()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="icon-btn" id="eye-btn-mobile" onclick="toggleHide()">
+          <svg id="eye-icon-mobile" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openSettings()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
     </div>
     <div class="month-nav">
       <button class="month-btn" onclick="chMonth(-1)">‹</button>
@@ -385,8 +392,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="dt-nav-item" data-tab="fixas" onclick="dtNavTo('fixas',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Fixas</button>
     <button class="dt-nav-item" data-tab="variaveis" onclick="dtNavTo('variaveis',this)"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Variáveis</button>
     <button class="dt-nav-item" data-tab="cofrinhos" onclick="dtNavTo('cofrinhos',this)"><svg viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Cofrinhos</button>
-    <button class="dt-nav-item" data-tab="anual" onclick="dtNavTo('anual',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Analítico</button>
   </nav>
+  <button class="dt-cfg-btn" id="eye-btn-desktop" onclick="toggleHide()">
+    <svg id="eye-icon-desktop" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span id="eye-label-desktop">Ocultar valores</span>
+  </button>
   <button class="dt-cfg-btn" onclick="openSettings()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configurações</button>
 </div>
 
@@ -611,11 +621,11 @@ function renderMobile(md,c){
 }
 
 function renderDesktop(md,c){
-  document.getElementById('dp-saldo').textContent=fmt(c.saldo);
-  document.getElementById('dp-rec').textContent=fmt(userData.salario);
-  document.getElementById('dp-gastos').textContent=fmt(c.total);
-  document.getElementById('dp-fixas').textContent=fmt(c.fT);
-  document.getElementById('dp-vars').textContent=fmt(c.vT);
+  document.getElementById('dp-saldo').textContent=fmtV(c.saldo);
+  document.getElementById('dp-rec').textContent=fmtV(userData.salario);
+  document.getElementById('dp-gastos').textContent=fmtV(c.total);
+  document.getElementById('dp-fixas').textContent=fmtV(c.fT);
+  document.getElementById('dp-vars').textContent=fmtV(c.vT);
   const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
   document.getElementById('dp-pct').textContent=pct+'%';
   const fill=document.getElementById('dp-bar');
@@ -664,26 +674,26 @@ function buildDtResumo(md,c){
   }
   return`<div class="dt-hero">
     <div class="balance-label">Saldo disponível</div>
-    <div class="balance-value">${fmt(c.saldo)}</div>
-    <div class="balance-compare" id="h-compare">${prevCmp}</div>
+    <div class="balance-value">${fmtV(c.saldo)}</div>
+    <div class="balance-compare" id="h-compare">${valuesHidden?'••••••':prevCmp}</div>
     <div class="hero-pills">
-      <div class="pill"><div class="pill-label">Recebido</div><div class="pill-value">${fmt(userData.salario)}</div></div>
-      <div class="pill" onclick="openSheet('sh-extra')" style="cursor:pointer"><div class="pill-label">+ Renda Extra</div><div class="pill-value">${fmt(c.eT)}</div></div>
-      <div class="pill"><div class="pill-label">Gastos</div><div class="pill-value">${fmt(c.total)}</div></div>
+      <div class="pill"><div class="pill-label">Recebido</div><div class="pill-value">${fmtV(userData.salario)}</div></div>
+      <div class="pill" onclick="openSheet('sh-extra')" style="cursor:pointer"><div class="pill-label">+ Renda Extra</div><div class="pill-value">${fmtV(c.eT)}</div></div>
+      <div class="pill"><div class="pill-label">Gastos</div><div class="pill-value">${fmtV(c.total)}</div></div>
     </div>
   </div>
   <div class="dt-wave"><svg viewBox="0 0 1200 28" preserveAspectRatio="none"><path d="M0,28 L0,14 Q300,0 600,14 Q900,28 1200,14 L1200,28 Z" fill="#F4F4F8"/></svg></div>
   <div class="dt-content">
     ${wifeHtml}
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:600">Orçamento do mês</span><span style="font-size:13px;font-weight:700;color:var(--purple)">${Math.round(c.entradas>0?Math.min(100,c.total/c.entradas*100):0)}%</span></div>
-      <div class="budget-bar"><div class="budget-fill${c.entradas>0&&c.total/c.entradas>=.9?' danger':c.entradas>0&&c.total/c.entradas>=.7?' warn':''}" style="width:${c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0}%"></div></div>
-      <div class="budget-labels"><span>${fmt(c.total)} gastos</span><span>de ${fmt(c.entradas)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:600">Orçamento do mês</span><span style="font-size:13px;font-weight:700;color:var(--purple)">${valuesHidden?'••%':Math.round(c.entradas>0?Math.min(100,c.total/c.entradas*100):0)+'%'}</span></div>
+      <div class="budget-bar"><div class="budget-fill${c.entradas>0&&c.total/c.entradas>=.9?' danger':c.entradas>0&&c.total/c.entradas>=.7?' warn':''}" style="width:${valuesHidden?0:c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0}%"></div></div>
+      <div class="budget-labels"><span>${fmtV(c.total)} gastos</span><span>de ${fmtV(c.entradas)}</span></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-label">Fixas</div><div class="stat-value">${fmt(c.fT)}</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#FF9F43" fill="none" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="stat-label">Variáveis</div><div class="stat-value">${fmt(c.vT)}</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#00C896" fill="none" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div class="stat-label">Cofrinhos</div><div class="stat-value">${fmt(c.aT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-label">Fixas</div><div class="stat-value">${fmtV(c.fT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#FF9F43" fill="none" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="stat-label">Variáveis</div><div class="stat-value">${fmtV(c.vT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#00C896" fill="none" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div class="stat-label">Cofrinhos</div><div class="stat-value">${fmtV(c.aT)}</div></div>
       <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-label">Pagas</div><div class="stat-value">${pagas+pgVar}/${totalPag}</div></div>
     </div>
   </div>`;
@@ -766,13 +776,22 @@ function renderDtAnalitico(){
 
 // ── MOBILE RENDERS (inalterados) ──
 function renderResumo(md,c){
-  document.getElementById('h-saldo').textContent=fmt(c.saldo);document.getElementById('p-recebido').textContent=fmt(userData.salario);document.getElementById('p-extra').textContent=fmt(c.eT);document.getElementById('p-gastos').textContent=fmt(c.total);
+  document.getElementById('h-saldo').textContent=fmtV(c.saldo);
+  document.getElementById('p-recebido').textContent=fmtV(userData.salario);
+  document.getElementById('p-extra').textContent=fmtV(c.eT);
+  document.getElementById('p-gastos').textContent=fmtV(c.total);
   const pk=`${curM===1?curY-1:curY}-${curM===1?12:curM-1}`,prev=userData.months[pk];
-  if(prev){const pc=calcMonth(prev,userData.salario),d=c.saldo-pc.saldo;document.getElementById('h-compare').textContent=(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';}else document.getElementById('h-compare').textContent='Primeiro mês';
+  if(prev){const pc=calcMonth(prev,userData.salario),d=c.saldo-pc.saldo;document.getElementById('h-compare').textContent=valuesHidden?'••••••':(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';}
+  else document.getElementById('h-compare').textContent='Primeiro mês';
   const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
-  document.getElementById('bud-pct').textContent=pct+'%';const bar=document.getElementById('bud-bar');bar.style.width=pct+'%';bar.className='budget-fill'+(pct>=90?' danger':pct>=70?' warn':'');
-  document.getElementById('bud-spent').textContent=fmt(c.total)+' gastos';document.getElementById('bud-total').textContent='de '+fmt(c.entradas);
-  document.getElementById('s-fixas').textContent=fmt(c.fT);document.getElementById('s-vars').textContent=fmt(c.vT);document.getElementById('s-cofre').textContent=fmt(c.aT);
+  document.getElementById('bud-pct').textContent=valuesHidden?'••%':pct+'%';
+  const bar=document.getElementById('bud-bar');
+  bar.style.width=pct+'%';bar.className='budget-fill'+(pct>=90?' danger':pct>=70?' warn':'');
+  document.getElementById('bud-spent').textContent=fmtV(c.total)+' gastos';
+  document.getElementById('bud-total').textContent='de '+fmtV(c.entradas);
+  document.getElementById('s-fixas').textContent=fmtV(c.fT);
+  document.getElementById('s-vars').textContent=fmtV(c.vT);
+  document.getElementById('s-cofre').textContent=fmtV(c.aT);
   const pagas=(md.fixas||[]).filter(f=>md.pagos&&md.pagos[f.id]).length,pgVar=(md.variaveis||[]).filter(v=>md.pagosVar&&md.pagosVar[v.id]).length,totalPag=(md.fixas||[]).length+(md.variaveis||[]).length;
   document.getElementById('s-pagas').textContent=`${pagas+pgVar}/${totalPag}`;
 }
@@ -876,7 +895,28 @@ function delFixa(id){const nome=((getMD().fixas||[]).find(f=>f.id===id)||{}).nom
 function delVar(id){getMD().variaveis=getMD().variaveis.filter(v=>v.id!==id);schedSave();render();showToast('Removido');}
 function delCofre(id){userData.cofrinhos=(userData.cofrinhos||[]).filter(c=>c.id!==id);schedSave();render();showToast('Cofrinho excluído');}
 
-// ── IA ──
+// ── OLHINHO ──
+let valuesHidden=false;
+const EYE_OPEN=`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+const EYE_CLOSED=`<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+function toggleHide(){
+  valuesHidden=!valuesHidden;
+  // Atualiza ícones
+  ['eye-icon-mobile','eye-icon-desktop'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=valuesHidden?EYE_CLOSED:EYE_OPEN;
+  });
+  const lbl=document.getElementById('eye-label-desktop');
+  if(lbl) lbl.textContent=valuesHidden?'Mostrar valores':'Ocultar valores';
+  // Re-renderiza com novo estado
+  render();
+}
+
+// Wrapper: retorna valor formatado ou "••••••" conforme estado
+function fmtV(n){
+  return valuesHidden?'••••••':fmt(n);
+}
 function toggleApiWarn(){const el=document.getElementById('ia-api-warn');if(el){el.style.display=el.style.display==='none'?'block':'none';if(el.style.display==='block'&&document.getElementById('ia-key-input'))document.getElementById('ia-key-input').value=anthropicKey;}}
 function saveApiKey(){const inp=document.getElementById('ia-key-input');if(inp)anthropicKey=inp.value.trim();document.getElementById('ia-api-warn').style.display='none';showToast('API key salva!');}
 async function runAnalysis(){const btn=document.getElementById('ia-btn'),result=document.getElementById('ia-result');if(!btn||!result)return;btn.disabled=true;btn.textContent='Analisando...';result.innerHTML='<span style="color:rgba(255,255,255,.4);font-style:italic">Gerando análise...</span>';const meses=[];for(let m=1;m<=12;m++){const k=`${curY}-${m}`,md=userData.months[k]||{};const c=calcMonth(md,userData.salario);if(c.total>0||c.entradas>0)meses.push({mes:MN[m-1],entradas:c.entradas,fixas:c.fT,variaveis:c.vT,cofrinhos:c.aT,saldo:c.saldo});}const curMD=getMD(),curC=calcMonth(curMD,userData.salario);if(!anthropicKey){await new Promise(r=>setTimeout(r,900));result.innerHTML=gerarAnaliseLocal(meses,curC,curMD);btn.disabled=false;btn.textContent='Analisar';return;}try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':anthropicKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,messages:[{role:'user',content:`Você é um assistente financeiro pessoal. Analise os dados abaixo e gere um relatório comparativo mês a mês em português. Foco em: variações de gastos, categorias que mais cresceram/diminuíram, e 2-3 insights práticos. Seja direto, use números reais. Máximo 180 palavras.\nSalário: ${fmt(userData.salario)}\nDados mensais: ${JSON.stringify(meses)}\nMês atual (${MN[curM-1]}): fixas=${fmt(curC.fT)}, variáveis=${fmt(curC.vT)}, saldo=${fmt(curC.saldo)}`}]})});const data=await res.json();if(data.error)result.innerHTML=`<span style="color:#ff8a94">Erro: ${data.error.message}</span>`;else result.innerHTML=`<div style="color:rgba(255,255,255,.9)">${data.content[0].text.replace(/\n/g,'<br>')}</div><div style="color:rgba(255,255,255,.3);font-size:10px;margin-top:10px">IA · ${new Date().toLocaleDateString('pt-BR')}</div>`;}catch(e){result.innerHTML=gerarAnaliseLocal(meses,curC,curMD);}btn.disabled=false;btn.textContent='Analisar';}
