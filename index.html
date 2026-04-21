@@ -460,7 +460,19 @@ firebase.initializeApp({apiKey:"AIzaSyCJTjrAjqdT7mwzFp7es-QAHqT_GnasN8c",authDom
 const auth=firebase.auth(),db=firebase.firestore();
 const MN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MIN_Y=2026,MIN_M=4;
-const CAT_PALETTE={'Alimentação':'#FF6B6B','Transporte':'#4ECDC4','Saúde':'#45B7D1','Lazer':'#F7B731','Educação':'#A29BFE','Vestuário':'#FD79A8','Outros':'#636E72','Casa':'#6C22BD','Cartão de Crédito':'#E17055','Assinaturas':'#00B894','Financiamentos':'#D63031','Seguros':'#0984E3','Academia / Saúde':'#00CEC9','Outros (Fixos)':'#B2BEC3'};
+const CAT_PALETTE={
+  // Fixas
+  'Casa':'#6C22BD','Internet & TV':'#00B894','Cartão de Crédito':'#E17055',
+  'Assinaturas':'#6C5CE7','Financiamentos':'#D63031','Seguros':'#0984E3',
+  'Saúde & Academia':'#00CEC9','Educação':'#FDCB6E','Telefone':'#A29BFE',
+  'Outros (Fixos)':'#B2BEC3',
+  // Variáveis
+  'Alimentação':'#FF6B6B','Transporte':'#4ECDC4','Saúde':'#45B7D1',
+  'Lazer':'#F7B731','Vestuário':'#FD79A8','Casa':'#6C22BD',
+  'Pets':'#55EFC4','Beleza':'#E84393','Outros':'#636E72',
+  // Especial
+  'Cofrinhos':'#00C896'
+};
 const FIXA_GRUPOS=[{grupo:'Casa',keys:['agua','água','luz','energia','internet','condomínio','condominio','aluguel','iptu','gás','gas']},{grupo:'Cartão de Crédito',keys:['cartão','cartao','card','nubank','itau','itaú','bradesco','santander','inter','c6','xp']},{grupo:'Assinaturas',keys:['netflix','spotify','amazon','prime','disney','hbo','max','youtube','crunchyroll','deezer','apple','icloud','office','microsoft']},{grupo:'Financiamentos',keys:['financiamento','parcela','prestação','prestacao','carro','moto','veículo','veiculo','empréstimo','emprestimo']},{grupo:'Seguros',keys:['seguro','insurance']},{grupo:'Academia / Saúde',keys:['academia','gym','boxe','luta','natação','natacao','plano','convenio','convênio','odonto','médico','medico']}];
 function inferirGrupoFixa(nome){const n=nome.toLowerCase();for(const g of FIXA_GRUPOS)if(g.keys.some(k=>n.includes(k)))return g.grupo;return'Outros (Fixos)';}
 const ERR={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha incorretos.','auth/email-already-in-use':'E-mail já cadastrado.','auth/weak-password':'Senha fraca (mín. 6 caracteres).','auth/too-many-requests':'Muitas tentativas. Aguarde.','auth/network-request-failed':'Sem conexão.'};
@@ -666,32 +678,55 @@ function buildDtCofrinhos(md){
 function renderDtAnalitico(){
   const main=document.getElementById('dt-main');
   main.innerHTML=`<div class="dt-section">
-    <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
       <button id="filt-mes" class="filt-btn ${filtMode==='mes'?'active':''}" onclick="setFilt('mes')">Mês atual</button>
       <button id="filt-ano" class="filt-btn ${filtMode==='ano'?'active':''}" onclick="setFilt('ano')">Anual</button>
     </div>
-    <div class="card" style="padding:20px 16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:16px" id="chart-title">${filtMode==='ano'?'Distribuição — Anual '+curY:'Distribuição — '+MN[curM-1]+' '+curY}</div>
-      <div style="display:flex;align-items:center;gap:16px">
-        <div style="position:relative;flex-shrink:0"><svg id="anal-donut" width="130" height="130" viewBox="0 0 130 130"></svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><span style="font-size:10px;color:var(--text2);font-weight:600">TOTAL</span><span id="anal-donut-total" style="font-size:13px;font-weight:800;color:var(--text)">R$ 0</span></div></div>
-        <div id="anal-legend" style="flex:1;display:flex;flex-direction:column;gap:7px;overflow:hidden"></div>
+    <div class="card" style="padding:20px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px" id="chart-title"></div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="position:relative;flex-shrink:0">
+          <svg id="anal-donut" width="140" height="140" viewBox="0 0 140 140"></svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <span style="font-size:10px;color:var(--text2);font-weight:600">TOTAL</span>
+            <span id="anal-donut-total" style="font-size:13px;font-weight:800;color:var(--text)">R$ 0</span>
+          </div>
+        </div>
+        <div id="anal-legend" style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
       </div>
     </div>
     <div id="anal-bar-card" class="card" style="display:none">
       <div class="section-title">Evolução mensal</div>
       <div class="bar-chart"><div class="bars" id="bars"></div></div>
-      <div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#6C22BD"></div>Fixas</div><div class="legend-item"><div class="legend-dot" style="background:#FF9F43"></div>Variáveis</div><div class="legend-item"><div class="legend-dot" style="background:#00C896"></div>Cofrinhos</div></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#6C22BD"></div>Fixas</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF9F43"></div>Variáveis</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00C896"></div>Cofrinhos</div>
+      </div>
     </div>
     <div class="card" id="anual-sum" style="display:none"></div>
     <div class="card" style="background:linear-gradient(135deg,#1a0a2e,#2d1b69);border:none;padding:20px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#c8b4f0" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-      <div><div style="color:#fff;font-size:14px;font-weight:700">Análise Inteligente</div><div style="color:rgba(255,255,255,.5);font-size:11px">Comparativo mês a mês</div></div></div>
-      <div id="ia-result" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.7;min-height:48px"><span style="color:rgba(255,255,255,.4);font-style:italic">Clique em "Analisar" para gerar insights sobre seus gastos.</span></div>
-      <div id="ia-api-warn" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin-top:12px"><div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:8px">Insira sua API key da Anthropic:</div><input id="ia-key-input" type="password" placeholder="sk-ant-..." style="width:100%;padding:9px 12px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,.12);color:#fff;outline:none;margin-bottom:8px"><button onclick="saveApiKey()" style="width:100%;padding:9px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Salvar chave</button></div>
-      <div style="display:flex;gap:8px;margin-top:14px"><button onclick="runAnalysis()" id="ia-btn" style="flex:1;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Analisar</button><button onclick="toggleApiWarn()" style="padding:12px 14px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer">API Key</button></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#c8b4f0" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <div><div style="color:#fff;font-size:14px;font-weight:700">Análise Inteligente</div><div style="color:rgba(255,255,255,.5);font-size:11px">Comparativo mês a mês com categorias inteligentes</div></div>
+      </div>
+      <div id="ia-result" style="color:rgba(255,255,255,.85);font-size:13px;line-height:1.7;min-height:48px">
+        <span style="color:rgba(255,255,255,.4);font-style:italic">Clique em "Analisar" para gerar insights sobre seus gastos.</span>
+      </div>
+      <div id="ia-api-warn" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;margin-top:12px">
+        <div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:8px">Insira sua API key da Anthropic:</div>
+        <input id="ia-key-input" type="password" placeholder="sk-ant-..." style="width:100%;padding:9px 12px;border-radius:8px;border:none;font-size:13px;background:rgba(255,255,255,.12);color:#fff;outline:none;margin-bottom:8px">
+        <button onclick="saveApiKey()" style="width:100%;padding:9px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Salvar chave</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button onclick="runAnalysis()" id="ia-btn" style="flex:1;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Analisar</button>
+        <button onclick="toggleApiWarn()" style="padding:12px 14px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer">API Key</button>
+      </div>
     </div>
   </div>`;
+  // Roda após o HTML estar no DOM
   renderAnalitico();
 }
 
@@ -713,9 +748,61 @@ function renderCofrinhos(md){const el=document.getElementById('cofre-list');cons
 
 // ── ANALÍTICO ──
 function setFilt(mode){filtMode=mode;if(isDesktop())renderDtAnalitico();else{document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active'));document.getElementById('filt-'+mode).classList.add('active');renderAnalitico();}}
-function buildCatData(forceAnual){const cats={},processMD=(md)=>{(md.variaveis||[]).forEach(v=>{const c=v.categoria||'Outros';cats[c]=(cats[c]||0)+Number(v.valor);});(md.fixas||[]).forEach(f=>{const g=inferirGrupoFixa(f.nome);cats[g]=(cats[g]||0)+Number(f.valor);});const aT=(md.aportes||[]).reduce((s,a)=>s+Number(a.valor),0);if(aT>0)cats['Cofrinhos']=(cats['Cofrinhos']||0)+aT;};if(forceAnual){for(let m=1;m<=12;m++){const k=`${curY}-${m}`;if(userData.months[k])processMD(userData.months[k]);}}else processMD(getMD());return cats;}
+function buildCatData(forceAnual){
+  const cats={};
+  const processMD=(md)=>{
+    // Variáveis — usa inferência inteligente
+    (md.variaveis||[]).forEach(v=>{
+      const c=inferirCatVar(v.nome,v.categoria);
+      cats[c]=(cats[c]||0)+Number(v.valor);
+    });
+    // Fixas — agrupa por grupo inferido
+    (md.fixas||[]).forEach(f=>{
+      const g=inferirGrupoFixa(f.nome);
+      cats[g]=(cats[g]||0)+Number(f.valor);
+    });
+    const aT=(md.aportes||[]).reduce((s,a)=>s+Number(a.valor),0);
+    if(aT>0) cats['Cofrinhos']=(cats['Cofrinhos']||0)+aT;
+  };
+  if(forceAnual){for(let m=1;m<=12;m++){const k=`${curY}-${m}`;if(userData.months[k])processMD(userData.months[k]);}}
+  else processMD(getMD());
+  return cats;
+}
 function getCatColor(cat){return CAT_PALETTE[cat]||'#a0a0c0';}
-function renderDonutAnal(cats){const entries=Object.entries(cats).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),total=entries.reduce((s,[,v])=>s+v,0)||1,R=52,cx=65,cy=65,strokeW=20;let h='',start=0;entries.forEach(([cat,val])=>{const pct=val/total,ang=pct*2*Math.PI;if(pct>0.01){const x1=cx+R*Math.sin(start),y1=cy-R*Math.cos(start),x2=cx+R*Math.sin(start+ang),y2=cy-R*Math.cos(start+ang);h+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${pct>.5?1:0},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${getCatColor(cat)}" opacity=".93"/>`;}start+=ang;});const donut=document.getElementById('anal-donut');if(donut)donut.innerHTML=h+`<circle cx="${cx}" cy="${cy}" r="${R-strokeW}" fill="white"/>`;const dtotal=document.getElementById('anal-donut-total');if(dtotal)dtotal.textContent=fmt(total===1&&entries.length===0?0:total);const legend=document.getElementById('anal-legend');if(legend)legend.innerHTML=entries.map(([cat,val])=>{const pct=Math.round(val/total*100);return`<div style="display:flex;align-items:center;gap:6px;min-width:0"><div style="width:10px;height:10px;border-radius:50%;background:${getCatColor(cat)};flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat}</div><div style="font-size:10px;color:var(--text2)">${fmt(val)} · ${pct}%</div></div></div>`;}).join('');}
+function renderDonutAnal(cats){
+  const entries=Object.entries(cats).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0)||1;
+  const svg=document.getElementById('anal-donut');
+  if(!svg)return;
+  // Adapta tamanho ao SVG presente (130 mobile, 140 desktop)
+  const size=svg.viewBox.baseVal.width||130;
+  const R=Math.round(size*.37),cx=size/2,cy=size/2,strokeW=Math.round(size*.15);
+  let h='',start=0;
+  entries.forEach(([cat,val])=>{
+    const pct=val/total,ang=pct*2*Math.PI;
+    if(pct>0.01){
+      const x1=cx+R*Math.sin(start),y1=cy-R*Math.cos(start);
+      const x2=cx+R*Math.sin(start+ang),y2=cy-R*Math.cos(start+ang);
+      h+=`<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R} 0 ${pct>.5?1:0},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${getCatColor(cat)}" opacity=".93"/>`;
+    }
+    start+=ang;
+  });
+  svg.innerHTML=h+`<circle cx="${cx}" cy="${cy}" r="${R-strokeW}" fill="white"/>`;
+  const dtotal=document.getElementById('anal-donut-total');
+  if(dtotal)dtotal.textContent=fmt(entries.length?total:0);
+  const legend=document.getElementById('anal-legend');
+  if(!legend)return;
+  legend.innerHTML=entries.map(([cat,val])=>{
+    const pct=Math.round(val/total*100);
+    return`<div style="display:flex;align-items:center;gap:6px;min-width:0">
+      <div style="width:10px;height:10px;border-radius:50%;background:${getCatColor(cat)};flex-shrink:0"></div>
+      <div style="min-width:0">
+        <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cat}</div>
+        <div style="font-size:10px;color:var(--text2)">${fmt(val)} · ${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 function renderAnalitico(){const isAnual=filtMode==='ano';const ct=document.getElementById('chart-title');if(ct)ct.textContent=isAnual?`Distribuição — Anual ${curY}`:`Distribuição — ${MN[curM-1]} ${curY}`;renderDonutAnal(buildCatData(isAnual));const barCard=document.getElementById('anal-bar-card'),sumCard=document.getElementById('anual-sum');if(!isAnual){if(barCard)barCard.style.display='none';if(sumCard)sumCard.style.display='none';return;}if(barCard)barCard.style.display='block';if(sumCard)sumCard.style.display='block';const maxV=Math.max(1,...Array.from({length:12},(_,i)=>calcMonth(userData.months[`${curY}-${i+1}`]||{},userData.salario).total));const H=130;let bHtml='',tF=0,tV=0,tA=0,tS=0;for(let m=1;m<=12;m++){const c=calcMonth(userData.months[`${curY}-${m}`]||{},userData.salario),hF=Math.round((c.fT/maxV)*H),hV=Math.round((c.vT/maxV)*H),hA=Math.round((c.aT/maxV)*H),at=m===curM;tF+=c.fT;tV+=c.vT;tA+=c.aT;tS+=c.saldo;bHtml+=`<div class="bar-col"><div class="bar-stack" style="height:${H}px${at?';outline:2px solid var(--purple);border-radius:4px 4px 0 0':''}"><div style="height:${hF}px;background:#6C22BD;min-height:${hF>0?2:0}px"></div><div style="height:${hV}px;background:#FF9F43;min-height:${hV>0?2:0}px"></div><div style="height:${hA}px;background:#00C896;min-height:${hA>0?2:0}px"></div></div><div class="bar-lbl" style="${at?'color:var(--purple);font-weight:800':''}">${MN[m-1].slice(0,3)}</div></div>`;}const bEl=document.getElementById('bars');if(bEl)bEl.innerHTML=bHtml;if(sumCard)sumCard.innerHTML=`<div class="section-title">Resumo ${curY}</div><div class="list-item"><div class="item-info"><div class="item-name">Fixas</div></div><div class="item-value">${fmt(tF)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Variáveis</div></div><div class="item-value">${fmt(tV)}</div></div><div class="list-item"><div class="item-info"><div class="item-name">Aportes</div></div><div class="item-value">${fmt(tA)}</div></div><div class="list-item" style="border:none"><div class="item-info"><div class="item-name" style="color:var(--green);font-weight:700">Saldo acumulado</div></div><div class="item-value" style="color:var(--green)">${fmt(tS)}</div></div>`;}
 
 // ── WIFE ──
