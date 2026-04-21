@@ -461,18 +461,52 @@ const auth=firebase.auth(),db=firebase.firestore();
 const MN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MIN_Y=2026,MIN_M=4;
 const CAT_PALETTE={
-  // Fixas
-  'Casa':'#6C22BD','Internet & TV':'#00B894','Cartão de Crédito':'#E17055',
-  'Assinaturas':'#6C5CE7','Financiamentos':'#D63031','Seguros':'#0984E3',
-  'Saúde & Academia':'#00CEC9','Educação':'#FDCB6E','Telefone':'#A29BFE',
-  'Outros (Fixos)':'#B2BEC3',
-  // Variáveis
-  'Alimentação':'#FF6B6B','Transporte':'#4ECDC4','Saúde':'#45B7D1',
-  'Lazer':'#F7B731','Vestuário':'#FD79A8','Casa':'#6C22BD',
-  'Pets':'#55EFC4','Beleza':'#E84393','Outros':'#636E72',
+  // Grupos de fixas
+  'Moradia':'#6C22BD',
+  'Internet & TV':'#00B894',
+  'Cartão de Crédito':'#E17055',
+  'Assinaturas':'#6C5CE7',
+  'Financiamentos':'#D63031',
+  'Seguros':'#0984E3',
+  'Saúde':'#00CEC9',
+  'Academia & Esporte':'#55EFC4',
+  'Educação':'#FDCB6E',
+  'Telefone':'#A29BFE',
+  'Ferramentas & IA':'#FD79A8',
+  'Outros (Fixos)':'#636E72',
+  // Categorias de variáveis
+  'Alimentação':'#FF6B6B',
+  'Transporte':'#4ECDC4',
+  'Lazer':'#F7B731',
+  'Vestuário':'#E84393',
+  'Casa':'#8854d0',
+  'Pets':'#26de81',
+  'Beleza':'#fc5c65',
+  'Outros':'#778ca3',
   // Especial
-  'Cofrinhos':'#00C896'
+  'Cofrinhos':'#00C896',
 };
+
+const VAR_SMART=[
+  {cat:'Alimentação',  keys:['mercado','supermercado','ifood','rappi','uber eats','delivery','padaria','restaurante','lanche','pizza','sushi','açougue','acougue','feira','hortifruti','pão','pao','café','cafe','bar ','boteco','churrasco','burguer','burger','subway','mcdonalds','bk ','coxinha','pastel','sorveteria']},
+  {cat:'Transporte',   keys:['uber','99 ','táxi','taxi','combustível','combustivel','gasolina','etanol','diesel','posto ','estacionamento','pedágio','pedagio','ônibus','onibus','metrô','metro','trem ','passagem','transporte','brt','moto taxi','mototaxi']},
+  {cat:'Saúde',        keys:['farmácia','farmacia','remédio','remedio','medicamento','consulta','médico','medico','exame','laboratorio','laboratório','dentista','psicólogo','psicologo','terapia','vacina','hospital','emergência','emergencia','pronto','ubs','drogaria','droga']},
+  {cat:'Lazer',        keys:['cinema','teatro','show','ingresso','parque','hotel','hostel','airbnb','booking','passagem aérea','aérea','aerea','turismo','passeio','museu','exposição','exposicao','clube','piscina','jogo','game','steam','playstation','xbox','switch','diversão','diversao']},
+  {cat:'Vestuário',    keys:['roupa','calçado','calcado','sapato','tênis','tenis','camiseta','calça','calca','vestido','camisa','bermuda','short','moda','loja ','zara','hm ','renner','riachuelo','c&a','shein','shopee']},
+  {cat:'Educação',     keys:['livro','udemy','coursera','alura','dio ','apostila','material escolar','caneta','caderno']},
+  {cat:'Casa',         keys:['limpeza','vassoura','detergente','sabão','sabao','desinfetante','papel higiênico','higienico','organizador','decoração','decoracao','móvel','movel','eletrodoméstico','eletrodomestico','conserto','reparo','reforma','tinta','ferramenta']},
+  {cat:'Pets',         keys:['pet','vet','veterinário','veterinario','ração','racao','tosa','coleira','animais']},
+  {cat:'Beleza',       keys:['salão','salao','cabelo','barbearia','manicure','pedicure','estética','estetica','maquiagem','perfume','skincare','creme','shampoo','condicionador','barba','depilação','depilacao']},
+];
+
+function inferirCatVar(nome,catManual){
+  if(catManual&&catManual!=='Outros') return catManual;
+  const n=nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  for(const g of VAR_SMART)
+    if(g.keys.some(k=>n.includes(k.normalize('NFD').replace(/[\u0300-\u036f]/g,''))))
+      return g.cat;
+  return catManual||'Outros';
+}
 const FIXA_GRUPOS=[{grupo:'Casa',keys:['agua','água','luz','energia','internet','condomínio','condominio','aluguel','iptu','gás','gas']},{grupo:'Cartão de Crédito',keys:['cartão','cartao','card','nubank','itau','itaú','bradesco','santander','inter','c6','xp']},{grupo:'Assinaturas',keys:['netflix','spotify','amazon','prime','disney','hbo','max','youtube','crunchyroll','deezer','apple','icloud','office','microsoft']},{grupo:'Financiamentos',keys:['financiamento','parcela','prestação','prestacao','carro','moto','veículo','veiculo','empréstimo','emprestimo']},{grupo:'Seguros',keys:['seguro','insurance']},{grupo:'Academia / Saúde',keys:['academia','gym','boxe','luta','natação','natacao','plano','convenio','convênio','odonto','médico','medico']}];
 function inferirGrupoFixa(nome){const n=nome.toLowerCase();for(const g of FIXA_GRUPOS)if(g.keys.some(k=>n.includes(k)))return g.grupo;return'Outros (Fixos)';}
 const ERR={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha incorretos.','auth/email-already-in-use':'E-mail já cadastrado.','auth/weak-password':'Senha fraca (mín. 6 caracteres).','auth/too-many-requests':'Muitas tentativas. Aguarde.','auth/network-request-failed':'Sem conexão.'};
@@ -747,7 +781,15 @@ function renderVars(md){const el=document.getElementById('vars-list');const cats
 function renderCofrinhos(md){const el=document.getElementById('cofre-list');const mAp={};(md.aportes||[]).forEach(a=>{if(!mAp[a.cofId])mAp[a.cofId]=0;mAp[a.cofId]+=Number(a.valor);});if(!(userData.cofrinhos||[]).length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--text2)">Nenhum cofrinho.<br>Toque em + para criar.</div>';return;}el.innerHTML=userData.cofrinhos.map(c=>{const total=Number(c.total||0)+Number(mAp[c.id]||0),pct=c.meta>0?Math.min(100,Math.round(total/c.meta*100)):0;return`<div class="cofre-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:15px;font-weight:700">${esc(c.nome)}</span><span style="font-size:13px;color:var(--purple);font-weight:700">${pct}%</span></div><div style="font-size:13px;color:var(--text2)">${fmt(total)} de ${fmt(c.meta)}</div><div class="cofre-progress"><div class="cofre-fill" style="width:${pct}%"></div></div><div class="cofre-actions"><button class="cofre-btn ap" onclick="openAporte('${c.id}')">Aportar</button><button class="cofre-btn dl" onclick="delCofre('${c.id}')">Excluir</button></div></div>`;}).join('');}
 
 // ── ANALÍTICO ──
-function setFilt(mode){filtMode=mode;if(isDesktop())renderDtAnalitico();else{document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active'));document.getElementById('filt-'+mode).classList.add('active');renderAnalitico();}}
+function setFilt(mode){
+  filtMode=mode;
+  // Atualiza botões em qualquer contexto (mobile ou desktop)
+  document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('filt-'+mode);
+  if(btn)btn.classList.add('active');
+  if(isDesktop()) renderDtAnalitico();
+  else renderAnalitico();
+}
 function buildCatData(forceAnual){
   const cats={};
   const processMD=(md)=>{
