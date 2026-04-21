@@ -405,49 +405,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 
-  <!-- DESKTOP PANEL (coluna direita, só visível no PC) -->
-  <div id="desktop-panel" style="display:none">
-    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:20px;letter-spacing:-.3px">Visão Geral</div>
-
-    <div style="background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:16px;padding:16px;margin-bottom:16px">
-      <div style="color:rgba(255,255,255,.7);font-size:11px;margin-bottom:4px">Saldo disponível</div>
-      <div id="dp-saldo" style="color:#fff;font-size:28px;font-weight:800;letter-spacing:-1px">R$ 0,00</div>
-      <div id="dp-compare" style="color:rgba(255,255,255,.6);font-size:11px;margin-top:4px">—</div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div style="background:var(--bg);border-radius:12px;padding:12px">
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Recebido</div>
-        <div id="dp-rec" style="font-size:15px;font-weight:800">R$ 0</div>
-      </div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px">
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Gastos</div>
-        <div id="dp-gastos" style="font-size:15px;font-weight:800">R$ 0</div>
-      </div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px">
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Fixas</div>
-        <div id="dp-fixas" style="font-size:15px;font-weight:800">R$ 0</div>
-      </div>
-      <div style="background:var(--bg);border-radius:12px;padding:12px">
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Variáveis</div>
-        <div id="dp-vars" style="font-size:15px;font-weight:800">R$ 0</div>
-      </div>
-    </div>
-
-    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:12px;font-weight:600">Orçamento</span>
-        <span id="dp-pct" style="font-size:12px;font-weight:700;color:var(--purple)">0%</span>
-      </div>
-      <div style="background:#e0e0ea;border-radius:6px;height:8px;overflow:hidden">
-        <div id="dp-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,var(--purple),var(--purple-light));transition:width .5s;width:0%"></div>
-      </div>
-    </div>
-
-    <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">Contas fixas pendentes</div>
-    <div id="dp-fixas-list" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
-  </div>
-
   <nav class="bottom-nav">
     <button class="nav-item active" data-tab="resumo" onclick="navTo('resumo',this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Resumo
@@ -630,7 +587,7 @@ auth.onAuthStateChanged(async u=>{
     await loadData();
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    render();setupWife();setupDesktopPanel();
+    render();setupWife();
   }else{
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
@@ -721,7 +678,6 @@ function render(){
   if(tab==='variaveis') renderVars(md);
   if(tab==='cofrinhos') renderCofrinhos(md);
   if(tab==='anual')     renderAnalitico();
-  if(isDesktop())       updateDesktopPanel();
 }
 
 function renderResumo(md,c){
@@ -1081,43 +1037,7 @@ function delFixa(id){
 function delVar(id){getMD().variaveis=getMD().variaveis.filter(v=>v.id!==id);schedSave();render();showToast('Removido');}
 function delCofre(id){userData.cofrinhos=(userData.cofrinhos||[]).filter(c=>c.id!==id);schedSave();render();showToast('Cofrinho excluído');}
 
-// ── DESKTOP ──
-function isDesktop(){return window.innerWidth>=900;}
-
-function setupDesktopPanel(){
-  const panel=document.getElementById('desktop-panel');
-  if(isDesktop()){
-    panel.style.display='block';
-    updateDesktopPanel();
-  }else{
-    panel.style.display='none';
-  }
-}
-
-function updateDesktopPanel(){
-  const md=getMD(),c=calcMonth(md,userData.salario);
-  document.getElementById('dp-saldo').textContent=fmt(c.saldo);
-  document.getElementById('dp-rec').textContent=fmt(userData.salario);
-  document.getElementById('dp-gastos').textContent=fmt(c.total);
-  document.getElementById('dp-fixas').textContent=fmt(c.fT);
-  document.getElementById('dp-vars').textContent=fmt(c.vT);
-  const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
-  document.getElementById('dp-pct').textContent=pct+'%';
-  const bar=document.getElementById('dp-bar');
-  bar.style.width=pct+'%';
-  bar.style.background=pct>=90?'linear-gradient(90deg,var(--red),#ff6b7a)':pct>=70?'linear-gradient(90deg,var(--orange),#ffd89b)':'linear-gradient(90deg,var(--purple),var(--purple-light))';
-  const pk=`${curM===1?curY-1:curY}-${curM===1?12:curM-1}`;
-  const prev=userData.months[pk];
-  if(prev){const pc=calcMonth(prev,userData.salario);const d=c.saldo-pc.saldo;document.getElementById('dp-compare').textContent=(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';}
-  else document.getElementById('dp-compare').textContent='Primeiro mês';
-  // Lista fixas pendentes
-  const pendentes=(md.fixas||[]).filter(f=>!md.pagos||!md.pagos[f.id]);
-  document.getElementById('dp-fixas-list').innerHTML=pendentes.length
-    ?pendentes.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:10px;padding:9px 12px"><span style="font-size:12px;font-weight:600;color:var(--text)">${esc(f.nome)}</span><span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(f.valor)}</span></div>`).join('')
-    :'<div style="font-size:12px;color:var(--text2);padding:8px 4px">Todas as contas pagas!</div>';
-}
-
-window.addEventListener('resize',()=>{setupDesktopPanel();});
+// ── IA ──
 function toggleApiWarn(){
   const el=document.getElementById('ia-api-warn');
   el.style.display=el.style.display==='none'?'block':'none';
