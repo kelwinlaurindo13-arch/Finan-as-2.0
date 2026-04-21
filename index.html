@@ -7,7 +7,122 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--purple:#6C22BD;--purple-dark:#5a1a9e;--purple-light:#8B3DD8;--bg:#F4F4F8;--text:#1a1a2e;--text2:#666;--green:#00C896;--red:#FF4757;--orange:#FF9F43;--radius:16px;--shadow:0 2px 12px rgba(0,0,0,.08)}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── MOBILE (padrão) ── */
+#app-screen{max-width:430px;margin:0 auto}
+
+/* ── DESKTOP ── */
+@media(min-width:900px){
+  body{background:#1a0a2e}
+  #auth-screen{background:linear-gradient(160deg,var(--purple) 0%,var(--purple-dark) 100%)}
+
+  #app-screen{
+    max-width:100%;
+    margin:0;
+    display:grid !important;
+    grid-template-columns:240px 1fr 340px;
+    grid-template-rows:auto 1fr;
+    min-height:100vh;
+  }
+
+  /* Header vira sidebar esquerda */
+  .header{
+    grid-column:1;
+    grid-row:1/3;
+    position:fixed;
+    top:0;left:0;
+    width:240px;
+    height:100vh;
+    background:linear-gradient(180deg,var(--purple) 0%,var(--purple-dark) 100%);
+    display:flex;
+    flex-direction:column;
+    padding:32px 0 24px;
+    z-index:100;
+    overflow-y:auto;
+  }
+  .header-top{flex-direction:column;align-items:flex-start;padding:0 20px 24px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .header-title{font-size:20px;margin-bottom:4px}
+  .header-email{font-size:11px;word-break:break-all}
+  .icon-btn{margin-top:16px;width:100%;border-radius:12px;justify-content:flex-start;padding:0 12px;gap:8px;height:40px;font-size:13px;font-weight:600}
+  .icon-btn::after{content:'Configurações';color:rgba(255,255,255,.8);font-size:13px}
+  .month-nav{flex-direction:column;gap:12px;padding:20px 20px 0;align-items:stretch}
+  .month-label{text-align:center;font-size:15px}
+  .month-btn{width:100%}
+
+  /* Nav lateral */
+  .bottom-nav{
+    grid-column:1;
+    position:fixed;
+    bottom:0;left:0;
+    width:240px;
+    flex-direction:column;
+    border-top:1px solid rgba(255,255,255,.1);
+    border-right:none;
+    background:transparent;
+    padding:16px 12px 24px;
+    gap:4px;
+    transform:none;
+    left:0;
+  }
+  .nav-item{
+    flex-direction:row;
+    justify-content:flex-start;
+    padding:11px 14px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:600;
+    gap:12px;
+    color:rgba(255,255,255,.6);
+  }
+  .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav-item.active{background:rgba(255,255,255,.15);color:#fff}
+  .nav-item svg{width:20px;height:20px;flex-shrink:0}
+
+  /* Área de conteúdo principal — coluna central */
+  #v-resumo,#v-fixas,#v-variaveis,#v-cofrinhos,#v-anual{
+    grid-column:2;
+    grid-row:1/3;
+    margin-left:240px;
+    padding-bottom:0;
+    min-height:100vh;
+  }
+
+  /* Hero no desktop: faixa no topo */
+  .hero-wrap{border-radius:0}
+  .hero-body{padding:28px 32px 0}
+  .balance-value{font-size:44px}
+  .hero-pills{padding-bottom:24px;gap:10px}
+
+  /* Content padding maior */
+  .content{padding:24px 32px}
+
+  /* Painel direito: resumo/stats sempre visível */
+  #desktop-panel{
+    grid-column:3;
+    grid-row:1/3;
+    background:#fff;
+    border-left:1px solid #e8e8f0;
+    padding:24px 20px;
+    overflow-y:auto;
+    height:100vh;
+    position:sticky;
+    top:0;
+  }
+
+  /* Cards em 2 colunas na área central */
+  .stats-grid{grid-template-columns:1fr 1fr}
+
+  /* FAB reposicionado */
+  .fab{right:360px;bottom:32px}
+
+  /* Padding geral mobile desnecessário */
+  #app-screen{padding-bottom:0}
+
+  /* Sheets ficam centralizados */
+  .sheet{max-width:480px}
+  .overlay{background:rgba(0,0,0,.6)}
+}
 #auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:linear-gradient(160deg,var(--purple) 0%,var(--purple-dark) 100%);position:relative;overflow:hidden}
 #auth-screen::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='64'%3E%3Cpath d='M28 2 L54 17 L54 47 L28 62 L2 47 L2 17 Z' fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1.5'/%3E%3C/svg%3E");background-size:56px 64px;pointer-events:none}
 .auth-wordmark{color:#fff;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;z-index:1}
@@ -290,6 +405,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 
+  <!-- DESKTOP PANEL (coluna direita, só visível no PC) -->
+  <div id="desktop-panel" style="display:none">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:20px;letter-spacing:-.3px">Visão Geral</div>
+
+    <div style="background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="color:rgba(255,255,255,.7);font-size:11px;margin-bottom:4px">Saldo disponível</div>
+      <div id="dp-saldo" style="color:#fff;font-size:28px;font-weight:800;letter-spacing:-1px">R$ 0,00</div>
+      <div id="dp-compare" style="color:rgba(255,255,255,.6);font-size:11px;margin-top:4px">—</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:12px;padding:12px">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Recebido</div>
+        <div id="dp-rec" style="font-size:15px;font-weight:800">R$ 0</div>
+      </div>
+      <div style="background:var(--bg);border-radius:12px;padding:12px">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Gastos</div>
+        <div id="dp-gastos" style="font-size:15px;font-weight:800">R$ 0</div>
+      </div>
+      <div style="background:var(--bg);border-radius:12px;padding:12px">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Fixas</div>
+        <div id="dp-fixas" style="font-size:15px;font-weight:800">R$ 0</div>
+      </div>
+      <div style="background:var(--bg);border-radius:12px;padding:12px">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Variáveis</div>
+        <div id="dp-vars" style="font-size:15px;font-weight:800">R$ 0</div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:600">Orçamento</span>
+        <span id="dp-pct" style="font-size:12px;font-weight:700;color:var(--purple)">0%</span>
+      </div>
+      <div style="background:#e0e0ea;border-radius:6px;height:8px;overflow:hidden">
+        <div id="dp-bar" style="height:100%;border-radius:6px;background:linear-gradient(90deg,var(--purple),var(--purple-light));transition:width .5s;width:0%"></div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">Contas fixas pendentes</div>
+    <div id="dp-fixas-list" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
+  </div>
+
   <nav class="bottom-nav">
     <button class="nav-item active" data-tab="resumo" onclick="navTo('resumo',this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Resumo
@@ -472,7 +630,7 @@ auth.onAuthStateChanged(async u=>{
     await loadData();
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    render();setupWife();
+    render();setupWife();setupDesktopPanel();
   }else{
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
@@ -563,6 +721,7 @@ function render(){
   if(tab==='variaveis') renderVars(md);
   if(tab==='cofrinhos') renderCofrinhos(md);
   if(tab==='anual')     renderAnalitico();
+  if(isDesktop())       updateDesktopPanel();
 }
 
 function renderResumo(md,c){
@@ -922,7 +1081,43 @@ function delFixa(id){
 function delVar(id){getMD().variaveis=getMD().variaveis.filter(v=>v.id!==id);schedSave();render();showToast('Removido');}
 function delCofre(id){userData.cofrinhos=(userData.cofrinhos||[]).filter(c=>c.id!==id);schedSave();render();showToast('Cofrinho excluído');}
 
-// ── IA ──
+// ── DESKTOP ──
+function isDesktop(){return window.innerWidth>=900;}
+
+function setupDesktopPanel(){
+  const panel=document.getElementById('desktop-panel');
+  if(isDesktop()){
+    panel.style.display='block';
+    updateDesktopPanel();
+  }else{
+    panel.style.display='none';
+  }
+}
+
+function updateDesktopPanel(){
+  const md=getMD(),c=calcMonth(md,userData.salario);
+  document.getElementById('dp-saldo').textContent=fmt(c.saldo);
+  document.getElementById('dp-rec').textContent=fmt(userData.salario);
+  document.getElementById('dp-gastos').textContent=fmt(c.total);
+  document.getElementById('dp-fixas').textContent=fmt(c.fT);
+  document.getElementById('dp-vars').textContent=fmt(c.vT);
+  const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
+  document.getElementById('dp-pct').textContent=pct+'%';
+  const bar=document.getElementById('dp-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>=90?'linear-gradient(90deg,var(--red),#ff6b7a)':pct>=70?'linear-gradient(90deg,var(--orange),#ffd89b)':'linear-gradient(90deg,var(--purple),var(--purple-light))';
+  const pk=`${curM===1?curY-1:curY}-${curM===1?12:curM-1}`;
+  const prev=userData.months[pk];
+  if(prev){const pc=calcMonth(prev,userData.salario);const d=c.saldo-pc.saldo;document.getElementById('dp-compare').textContent=(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';}
+  else document.getElementById('dp-compare').textContent='Primeiro mês';
+  // Lista fixas pendentes
+  const pendentes=(md.fixas||[]).filter(f=>!md.pagos||!md.pagos[f.id]);
+  document.getElementById('dp-fixas-list').innerHTML=pendentes.length
+    ?pendentes.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:10px;padding:9px 12px"><span style="font-size:12px;font-weight:600;color:var(--text)">${esc(f.nome)}</span><span style="font-size:12px;font-weight:700;color:var(--red)">${fmt(f.valor)}</span></div>`).join('')
+    :'<div style="font-size:12px;color:var(--text2);padding:8px 4px">Todas as contas pagas!</div>';
+}
+
+window.addEventListener('resize',()=>{setupDesktopPanel();});
 function toggleApiWarn(){
   const el=document.getElementById('ia-api-warn');
   el.style.display=el.style.display==='none'?'block':'none';
