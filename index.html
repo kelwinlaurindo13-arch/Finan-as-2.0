@@ -127,11 +127,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   /* Auth centralizada */
   #auth-screen{max-width:100%}
 
-  /* Oculta tudo mobile do app, mostra wrapper desktop */
+  /* No desktop o app-screen mobile fica sempre oculto */
   #app-screen{display:none !important}
-  #app-screen.logged-in{display:grid !important;padding-bottom:0;max-width:100%;
-    grid-template-columns:220px 1fr 300px;
-    min-height:100vh}
 
   /* ── SIDEBAR ── */
   #dt-sidebar{
@@ -455,6 +452,10 @@ auth.onAuthStateChanged(async u=>{
     document.getElementById('dt-email').textContent=u.email;
     await loadData();
     document.getElementById('auth-screen').style.display='none';
+    // Força remoção do display:none inline antes de decidir layout
+    document.getElementById('dt-sidebar').style.display='';
+    document.getElementById('dt-main').style.display='';
+    document.getElementById('dt-panel').style.display='';
     if(isDesktop()) showDesktop(); else showMobile();
     render();setupWife();
   }else{
@@ -471,7 +472,7 @@ window.addEventListener('resize',()=>{
 });
 
 function showMobile(){
-  document.getElementById('app-screen').style.display='block';
+  document.getElementById('app-screen').style.setProperty('display','block','important');
   document.getElementById('dt-sidebar').style.display='none';
   document.getElementById('dt-main').style.display='none';
   document.getElementById('dt-panel').style.display='none';
