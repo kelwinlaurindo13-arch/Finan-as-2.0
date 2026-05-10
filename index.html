@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<div class="sheet" id="sh-wife"><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -458,7 +458,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="sheet" id="sh-cofre"><div class="sheet-handle"></div><div class="sheet-title">Novo cofrinho</div><div class="sf"><label>Nome</label><input type="text" id="cn" placeholder="Ex: Viagem"></div><div class="sf"><label>Meta R$</label><input type="number" id="cm" inputmode="decimal" placeholder="0,00"></div><button class="sheet-btn" onclick="addCofre()">Criar</button></div>
 <div class="sheet" id="sh-aporte"><div class="sheet-handle"></div><div class="sheet-title">Fazer aporte</div><input type="hidden" id="ap-cid"><div class="sf"><label>Descrição</label><input type="text" id="an" placeholder="Ex: Depósito mensal"></div><div class="sf"><label>Valor R$</label><input type="number" id="av" inputmode="decimal" placeholder="0,00"></div><button class="sheet-btn" onclick="addAporte()">Aportar</button></div>
 <div class="sheet" id="sh-extra"><div class="sheet-handle"></div><div class="sheet-title">Renda extra</div><div class="sf"><label>Descrição</label><input type="text" id="en" placeholder="Ex: Freela"></div><div class="sf"><label>Valor R$</label><input type="number" id="ev" inputmode="decimal" placeholder="0,00"></div><button class="sheet-btn" onclick="addExtra()">Adicionar</button></div>
-<div class="sheet" id="sh-wife"><div class="sheet-handle"></div><div class="sheet-title" id="wife-sheet-title">Finanças da Esposa</div><div id="wife-content"></div></div>
+<!-- EDITAR FIXA -->
+<div class="sheet" id="sh-edit-fixa">
+  <div class="sheet-handle"></div><div class="sheet-title">Editar conta fixa</div>
+  <input type="hidden" id="edit-fixa-id">
+  <div class="sf"><label>Nome</label><input type="text" id="edit-fixa-nome" placeholder="Ex: Aluguel"></div>
+  <div class="sf"><label>Valor R$</label><input type="number" id="edit-fixa-valor" inputmode="decimal" placeholder="0,00"></div>
+  <button class="sheet-btn" onclick="saveEditFixa()">Salvar alterações</button>
+</div>
+
+<!-- EDITAR VAR -->
+<div class="sheet" id="sh-edit-var">
+  <div class="sheet-handle"></div><div class="sheet-title">Editar gasto variável</div>
+  <input type="hidden" id="edit-var-id">
+  <div class="sf"><label>Nome</label><input type="text" id="edit-var-nome" placeholder="Ex: Mercado"></div>
+  <div class="sf"><label>Valor R$</label><input type="number" id="edit-var-valor" inputmode="decimal" placeholder="0,00"></div>
+  <div class="sf"><label>Categoria</label>
+    <select id="edit-var-cat">
+      <option>Alimentação</option><option>Transporte</option><option>Saúde</option>
+      <option>Lazer</option><option>Educação</option><option>Vestuário</option><option>Outros</option>
+    </select>
+  </div>
+  <button class="sheet-btn" onclick="saveEditVar()">Salvar alterações</button>
+</div><div class="sheet-handle"></div><div class="sheet-title" id="wife-sheet-title">Finanças da Esposa</div><div id="wife-content"></div></div>
 <div class="sheet" id="sh-cfg"><div class="sheet-handle"></div><div class="sheet-title">Configurações</div><div class="sf"><label>Valor mensal recebido R$</label><input type="number" id="cfg-sal" inputmode="decimal" placeholder="0,00"></div><div class="sf"><label>UID do parceiro(a)</label><input type="text" id="cfg-sp" placeholder="Cole o UID aqui" style="font-size:13px"></div><div class="sf"><label>Como chamar seu parceiro(a)</label><input type="text" id="cfg-spname" placeholder="Ex: Esposa, Marido, João..."></div><div class="uid-box">Seu UID: <b id="my-uid" style="font-size:11px"></b></div><button class="sheet-btn" onclick="saveSettings()">Salvar</button><button class="btn-danger" onclick="doLogout()">Sair da conta</button></div>
 <div class="toast" id="toast"></div>
 
@@ -621,11 +643,14 @@ function renderMobile(md,c){
 }
 
 function renderDesktop(md,c){
-  document.getElementById('dp-saldo').textContent=fmtV(c.saldo);
-  document.getElementById('dp-rec').textContent=fmtV(userData.salario);
-  document.getElementById('dp-gastos').textContent=fmtV(c.total);
-  document.getElementById('dp-fixas').textContent=fmtV(c.fT);
-  document.getElementById('dp-vars').textContent=fmtV(c.vT);
+  // Painel direito — só oculta saldo e comparativo
+  document.getElementById('dp-saldo').textContent=valuesHidden?'••••••':fmt(c.saldo);
+  document.getElementById('dp-compare').textContent=valuesHidden?'••••••':(prev?(()=>{const pc=calcMonth(prev,userData.salario),d=c.saldo-pc.saldo;return(d>=0?'▲ ':'▼ ')+fmt(Math.abs(d))+' vs mês anterior';})():'Primeiro mês');
+  // Mini-cards sempre visíveis
+  document.getElementById('dp-rec').textContent=fmt(userData.salario);
+  document.getElementById('dp-gastos').textContent=fmt(c.total);
+  document.getElementById('dp-fixas').textContent=fmt(c.fT);
+  document.getElementById('dp-vars').textContent=fmt(c.vT);
   const pct=c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0;
   document.getElementById('dp-pct').textContent=pct+'%';
   const fill=document.getElementById('dp-bar');
@@ -674,26 +699,26 @@ function buildDtResumo(md,c){
   }
   return`<div class="dt-hero">
     <div class="balance-label">Saldo disponível</div>
-    <div class="balance-value">${fmtV(c.saldo)}</div>
+    <div class="balance-value">${valuesHidden?'••••••':fmt(c.saldo)}</div>
     <div class="balance-compare" id="h-compare">${valuesHidden?'••••••':prevCmp}</div>
     <div class="hero-pills">
-      <div class="pill"><div class="pill-label">Recebido</div><div class="pill-value">${fmtV(userData.salario)}</div></div>
-      <div class="pill" onclick="openSheet('sh-extra')" style="cursor:pointer"><div class="pill-label">+ Renda Extra</div><div class="pill-value">${fmtV(c.eT)}</div></div>
-      <div class="pill"><div class="pill-label">Gastos</div><div class="pill-value">${fmtV(c.total)}</div></div>
+      <div class="pill"><div class="pill-label">Recebido</div><div class="pill-value">${valuesHidden?'••••••':fmt(userData.salario)}</div></div>
+      <div class="pill" onclick="openSheet('sh-extra')" style="cursor:pointer"><div class="pill-label">+ Renda Extra</div><div class="pill-value">${valuesHidden?'••••••':fmt(c.eT)}</div></div>
+      <div class="pill"><div class="pill-label">Gastos</div><div class="pill-value">${valuesHidden?'••••••':fmt(c.total)}</div></div>
     </div>
   </div>
   <div class="dt-wave"><svg viewBox="0 0 1200 28" preserveAspectRatio="none"><path d="M0,28 L0,14 Q300,0 600,14 Q900,28 1200,14 L1200,28 Z" fill="#F4F4F8"/></svg></div>
   <div class="dt-content">
     ${wifeHtml}
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:600">Orçamento do mês</span><span style="font-size:13px;font-weight:700;color:var(--purple)">${valuesHidden?'••%':Math.round(c.entradas>0?Math.min(100,c.total/c.entradas*100):0)+'%'}</span></div>
-      <div class="budget-bar"><div class="budget-fill${c.entradas>0&&c.total/c.entradas>=.9?' danger':c.entradas>0&&c.total/c.entradas>=.7?' warn':''}" style="width:${valuesHidden?0:c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0}%"></div></div>
-      <div class="budget-labels"><span>${fmtV(c.total)} gastos</span><span>de ${fmtV(c.entradas)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:14px;font-weight:600">Orçamento do mês</span><span style="font-size:13px;font-weight:700;color:var(--purple)">${Math.round(c.entradas>0?Math.min(100,c.total/c.entradas*100):0)}%</span></div>
+      <div class="budget-bar"><div class="budget-fill${c.entradas>0&&c.total/c.entradas>=.9?' danger':c.entradas>0&&c.total/c.entradas>=.7?' warn':''}" style="width:${c.entradas>0?Math.min(100,Math.round(c.total/c.entradas*100)):0}%"></div></div>
+      <div class="budget-labels"><span>${fmt(c.total)} gastos</span><span>de ${fmt(c.entradas)}</span></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-label">Fixas</div><div class="stat-value">${fmtV(c.fT)}</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#FF9F43" fill="none" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="stat-label">Variáveis</div><div class="stat-value">${fmtV(c.vT)}</div></div>
-      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#00C896" fill="none" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div class="stat-label">Cofrinhos</div><div class="stat-value">${fmtV(c.aT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="stat-label">Fixas</div><div class="stat-value">${fmt(c.fT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#FF9F43" fill="none" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="stat-label">Variáveis</div><div class="stat-value">${fmt(c.vT)}</div></div>
+      <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#00C896" fill="none" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div class="stat-label">Cofrinhos</div><div class="stat-value">${fmt(c.aT)}</div></div>
       <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24" stroke="#6C22BD" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><div class="stat-label">Pagas</div><div class="stat-value">${pagas+pgVar}/${totalPag}</div></div>
     </div>
   </div>`;
@@ -795,8 +820,110 @@ function renderResumo(md,c){
   const pagas=(md.fixas||[]).filter(f=>md.pagos&&md.pagos[f.id]).length,pgVar=(md.variaveis||[]).filter(v=>md.pagosVar&&md.pagosVar[v.id]).length,totalPag=(md.fixas||[]).length+(md.variaveis||[]).length;
   document.getElementById('s-pagas').textContent=`${pagas+pgVar}/${totalPag}`;
 }
-function renderFixas(md){const el=document.getElementById('fixas-list');if(!(md.fixas||[]).length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2)">Sem contas fixas.<br>Toque em + para adicionar.</div>';return;}el.innerHTML=md.fixas.map(f=>{const p=md.pagos&&md.pagos[f.id];return`<div class="list-item"><div class="item-icon" style="background:${p?'#e8fff6':'#f0e8ff'}"><svg viewBox="0 0 24 24" stroke="${p?'#00C896':'#6C22BD'}" fill="none" stroke-width="2">${p?'<polyline points="20 6 9 17 4 12"/>':'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'}</svg></div><div class="item-info"><div class="item-name">${esc(f.nome)}</div><div class="item-sub">${p?'Pago':'Pendente'}</div></div><div class="item-value">${fmt(f.valor)}</div><div style="display:flex;gap:6px;margin-left:8px;align-items:center"><button class="toggle ${p?'on':''}" onclick="togglePago('${f.id}')"></button><button onclick="delFixa('${f.id}')" style="background:none;border:none;cursor:pointer;padding:4px;color:#ccc"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></div></div>`;}).join('');}
-function renderVars(md){const el=document.getElementById('vars-list');const cats={};(md.variaveis||[]).forEach(v=>{if(!cats[v.categoria])cats[v.categoria]=[];cats[v.categoria].push(v);});if(!Object.keys(cats).length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--text2)">Sem gastos variáveis.<br>Toque em + para adicionar.</div>';return;}el.innerHTML=Object.entries(cats).map(([cat,items])=>`<div class="card" style="margin-bottom:10px"><div class="section-title" style="display:flex;align-items:center;gap:6px">${cat}<span style="margin-left:auto;font-size:13px;color:var(--purple);font-weight:700">${fmt(items.reduce((s,i)=>s+Number(i.valor),0))}</span></div>${items.map(v=>{const p=md.pagosVar&&md.pagosVar[v.id];return`<div class="list-item"><div class="item-icon" style="background:${p?'#e8fff6':'#fff4e8'}"><svg viewBox="0 0 24 24" stroke="${p?'#00C896':'#FF9F43'}" fill="none" stroke-width="2" width="18" height="18">${p?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg></div><div class="item-info"><div class="item-name">${esc(v.nome)}</div><div class="item-sub">${p?'Pago':'Pendente'}</div></div><div class="item-value" style="${p?'color:var(--text2);text-decoration:line-through':''}">${fmt(v.valor)}</div><div style="display:flex;gap:6px;margin-left:8px;align-items:center"><button class="toggle ${p?'on':''}" onclick="togglePagoVar('${v.id}')"></button><button onclick="delVar('${v.id}')" style="background:none;border:none;cursor:pointer;padding:4px;color:#ccc"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></div></div>`;}).join('')}</div>`).join('');}
+function renderFixas(md){
+  const el=document.getElementById('fixas-list');
+  if(!(md.fixas||[]).length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2)">Sem contas fixas.<br>Toque em + para adicionar.</div>';return;}
+
+  // Resta a pagar
+  const total=(md.fixas||[]).reduce((s,f)=>s+Number(f.valor),0);
+  const pago=(md.fixas||[]).filter(f=>md.pagos&&md.pagos[f.id]).reduce((s,f)=>s+Number(f.valor),0);
+  const resta=total-pago;
+  const pct=total>0?Math.round(pago/total*100):0;
+
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--purple),var(--purple-light));border-radius:12px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="color:rgba(255,255,255,.8);font-size:12px;font-weight:600">Resta a pagar</span>
+        <span style="color:rgba(255,255,255,.7);font-size:11px">${pct}% quitado</span>
+      </div>
+      <div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px">${fmt(resta)}</div>
+      <div style="background:rgba(255,255,255,.2);border-radius:6px;height:6px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;background:#fff;width:${pct}%;transition:width .4s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="color:rgba(255,255,255,.6);font-size:10px">Pago: ${fmt(pago)}</span>
+        <span style="color:rgba(255,255,255,.6);font-size:10px">Total: ${fmt(total)}</span>
+      </div>
+    </div>
+    ${md.fixas.map(f=>{
+      const p=md.pagos&&md.pagos[f.id];
+      return`<div class="list-item">
+        <div class="item-icon" style="background:${p?'#e8fff6':'#f0e8ff'}">
+          <svg viewBox="0 0 24 24" stroke="${p?'#00C896':'#6C22BD'}" fill="none" stroke-width="2">${p?'<polyline points="20 6 9 17 4 12"/>':'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'}</svg>
+        </div>
+        <div class="item-info">
+          <div class="item-name" style="${p?'text-decoration:line-through;color:var(--text2)':''}">${esc(f.nome)}</div>
+          <div class="item-sub">${p?'Pago':'Pendente'}</div>
+        </div>
+        <div class="item-value" style="${p?'color:var(--text2)':''}">${fmt(f.valor)}</div>
+        <div style="display:flex;gap:4px;margin-left:8px;align-items:center">
+          <button onclick="openEditFixa('${f.id}')" style="background:#f0e8ff;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--purple);display:flex;align-items:center">
+            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="toggle ${p?'on':''}" onclick="togglePago('${f.id}')"></button>
+          <button onclick="delFixa('${f.id}')" style="background:none;border:none;cursor:pointer;padding:4px;color:#ccc">
+            <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+function renderVars(md){
+  const el=document.getElementById('vars-list');
+  const cats={};
+  (md.variaveis||[]).forEach(v=>{if(!cats[v.categoria])cats[v.categoria]=[];cats[v.categoria].push(v);});
+  if(!Object.keys(cats).length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--text2)">Sem gastos variáveis.<br>Toque em + para adicionar.</div>';return;}
+
+  // Resta a pagar
+  const total=(md.variaveis||[]).reduce((s,v)=>s+Number(v.valor),0);
+  const pago=(md.variaveis||[]).filter(v=>md.pagosVar&&md.pagosVar[v.id]).reduce((s,v)=>s+Number(v.valor),0);
+  const resta=total-pago;
+  const pct=total>0?Math.round(pago/total*100):0;
+
+  const resumoBar=`
+    <div style="background:linear-gradient(135deg,#E17055,#fab1a0);border-radius:12px;padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="color:rgba(255,255,255,.85);font-size:12px;font-weight:600">Resta a pagar</span>
+        <span style="color:rgba(255,255,255,.7);font-size:11px">${pct}% quitado</span>
+      </div>
+      <div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px">${fmt(resta)}</div>
+      <div style="background:rgba(255,255,255,.2);border-radius:6px;height:6px;overflow:hidden">
+        <div style="height:100%;border-radius:6px;background:#fff;width:${pct}%;transition:width .4s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="color:rgba(255,255,255,.7);font-size:10px">Pago: ${fmt(pago)}</span>
+        <span style="color:rgba(255,255,255,.7);font-size:10px">Total: ${fmt(total)}</span>
+      </div>
+    </div>`;
+
+  const listas=Object.entries(cats).map(([cat,items])=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="section-title" style="display:flex;align-items:center;gap:6px">${cat}
+        <span style="margin-left:auto;font-size:13px;color:var(--purple);font-weight:700">${fmt(items.reduce((s,i)=>s+Number(i.valor),0))}</span>
+      </div>
+      ${items.map(v=>{const p=md.pagosVar&&md.pagosVar[v.id];return`<div class="list-item">
+        <div class="item-icon" style="background:${p?'#e8fff6':'#fff4e8'}">
+          <svg viewBox="0 0 24 24" stroke="${p?'#00C896':'#FF9F43'}" fill="none" stroke-width="2" width="18" height="18">${p?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'}</svg>
+        </div>
+        <div class="item-info">
+          <div class="item-name" style="${p?'text-decoration:line-through;color:var(--text2)':''}">${esc(v.nome)}</div>
+          <div class="item-sub">${p?'Pago':'Pendente'}</div>
+        </div>
+        <div class="item-value" style="${p?'color:var(--text2)':''}">${fmt(v.valor)}</div>
+        <div style="display:flex;gap:4px;margin-left:8px;align-items:center">
+          <button onclick="openEditVar('${v.id}')" style="background:#fff4e8;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#FF9F43;display:flex;align-items:center">
+            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="toggle ${p?'on':''}" onclick="togglePagoVar('${v.id}')"></button>
+          <button onclick="delVar('${v.id}')" style="background:none;border:none;cursor:pointer;padding:4px;color:#ccc">
+            <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>`;}).join('')}
+    </div>`).join('');
+
+  el.innerHTML=resumoBar+listas;
+}
 function renderCofrinhos(md){const el=document.getElementById('cofre-list');const mAp={};(md.aportes||[]).forEach(a=>{if(!mAp[a.cofId])mAp[a.cofId]=0;mAp[a.cofId]+=Number(a.valor);});if(!(userData.cofrinhos||[]).length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--text2)">Nenhum cofrinho.<br>Toque em + para criar.</div>';return;}el.innerHTML=userData.cofrinhos.map(c=>{const total=Number(c.total||0)+Number(mAp[c.id]||0),pct=c.meta>0?Math.min(100,Math.round(total/c.meta*100)):0;return`<div class="cofre-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:15px;font-weight:700">${esc(c.nome)}</span><span style="font-size:13px;color:var(--purple);font-weight:700">${pct}%</span></div><div style="font-size:13px;color:var(--text2)">${fmt(total)} de ${fmt(c.meta)}</div><div class="cofre-progress"><div class="cofre-fill" style="width:${pct}%"></div></div><div class="cofre-actions"><button class="cofre-btn ap" onclick="openAporte('${c.id}')">Aportar</button><button class="cofre-btn dl" onclick="delCofre('${c.id}')">Excluir</button></div></div>`;}).join('');}
 
 // ── ANALÍTICO ──
@@ -886,7 +1013,50 @@ function doLogout(){auth.signOut();}
 function addFixa(){const n=document.getElementById('fn').value.trim(),v=parseFloat(document.getElementById('fv').value);if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}getMD();propagateNovaFixa({id:uid8(),nome:n,valor:v});document.getElementById('fn').value='';document.getElementById('fv').value='';closeSheets();schedSave();render();showToast('Conta adicionada!');}
 function addVar(){const n=document.getElementById('vn').value.trim(),v=parseFloat(document.getElementById('vv').value),c=document.getElementById('vc').value;if(!n||isNaN(v)||v<=0){showToast('Preencha nome e valor');return;}getMD().variaveis.push({id:uid8(),nome:n,valor:v,categoria:c});document.getElementById('vn').value='';document.getElementById('vv').value='';closeSheets();schedSave();render();showToast('Gasto adicionado!');}
 function addCofre(){const n=document.getElementById('cn').value.trim(),m=parseFloat(document.getElementById('cm').value);if(!n||isNaN(m)||m<=0){showToast('Preencha nome e meta');return;}if(!userData.cofrinhos)userData.cofrinhos=[];userData.cofrinhos.push({id:uid8(),nome:n,meta:m,total:0});document.getElementById('cn').value='';document.getElementById('cm').value='';closeSheets();schedSave();render();showToast('Cofrinho criado!');}
-function openAporte(cid){document.getElementById('ap-cid').value=cid;openSheet('sh-aporte');}
+function openEditFixa(id){
+  const f=(getMD().fixas||[]).find(f=>f.id===id);
+  if(!f)return;
+  document.getElementById('edit-fixa-id').value=id;
+  document.getElementById('edit-fixa-nome').value=f.nome;
+  document.getElementById('edit-fixa-valor').value=f.valor;
+  openSheet('sh-edit-fixa');
+}
+function saveEditFixa(){
+  const id=document.getElementById('edit-fixa-id').value;
+  const nome=document.getElementById('edit-fixa-nome').value.trim();
+  const valor=parseFloat(document.getElementById('edit-fixa-valor').value);
+  if(!nome||isNaN(valor)||valor<=0){showToast('Preencha nome e valor');return;}
+  const oldNome=(getMD().fixas||[]).find(f=>f.id===id)?.nome;
+  // Atualiza no mês atual e futuros (mantém histórico)
+  const curTs=curY*100+curM;
+  Object.keys(userData.months).forEach(k=>{
+    const[y,m]=k.split('-').map(Number);
+    if(y*100+m>=curTs){
+      const f=(userData.months[k].fixas||[]).find(f=>f.nome===oldNome||f.id===id);
+      if(f){f.nome=nome;f.valor=valor;}
+    }
+  });
+  closeSheets();schedSave();render();showToast('Conta atualizada!');
+}
+function openEditVar(id){
+  const v=(getMD().variaveis||[]).find(v=>v.id===id);
+  if(!v)return;
+  document.getElementById('edit-var-id').value=id;
+  document.getElementById('edit-var-nome').value=v.nome;
+  document.getElementById('edit-var-valor').value=v.valor;
+  document.getElementById('edit-var-cat').value=v.categoria||'Outros';
+  openSheet('sh-edit-var');
+}
+function saveEditVar(){
+  const id=document.getElementById('edit-var-id').value;
+  const nome=document.getElementById('edit-var-nome').value.trim();
+  const valor=parseFloat(document.getElementById('edit-var-valor').value);
+  const cat=document.getElementById('edit-var-cat').value;
+  if(!nome||isNaN(valor)||valor<=0){showToast('Preencha nome e valor');return;}
+  const v=(getMD().variaveis||[]).find(v=>v.id===id);
+  if(v){v.nome=nome;v.valor=valor;v.categoria=cat;}
+  closeSheets();schedSave();render();showToast('Gasto atualizado!');
+}document.getElementById('ap-cid').value=cid;openSheet('sh-aporte');}
 function addAporte(){const cid=document.getElementById('ap-cid').value,n=document.getElementById('an').value.trim(),v=parseFloat(document.getElementById('av').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().aportes.push({id:uid8(),cofId:cid,nome:n,valor:v});document.getElementById('an').value='';document.getElementById('av').value='';closeSheets();schedSave();render();showToast('Aporte realizado!');}
 function addExtra(){const n=document.getElementById('en').value.trim(),v=parseFloat(document.getElementById('ev').value);if(!n||isNaN(v)||v<=0){showToast('Preencha descrição e valor');return;}getMD().extras.push({id:uid8(),nome:n,valor:v});document.getElementById('en').value='';document.getElementById('ev').value='';closeSheets();schedSave();render();showToast('Renda extra adicionada!');}
 function togglePago(id){const md=getMD();if(!md.pagos)md.pagos={};md.pagos[id]=!md.pagos[id];schedSave();render();}
